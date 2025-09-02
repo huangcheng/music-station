@@ -1,0 +1,17 @@
+{
+  "Upload": {
+    "title": "上传您的音乐文件",
+    "description": "将音频文件拖放到此处或点击以浏览",
+    "Upload": {
+      "title": "将音乐文件拖到此处",
+      "description": "或点击下方按钮从电脑中选择文件",
+      "button": "选择文件"
+    },
+    "List": {
+      "title": "已上传的音乐",
+      "completed": "上传完成",
+      "uploaded": "已上传",
+      "error": "上传失败"
+    }
+  }
+}

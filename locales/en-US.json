@@ -1,0 +1,17 @@
+{
+  "Upload": {
+    "title": "Upload Your Music Files",
+    "description": "Drag and drop your audio files here or click to browse",
+    "Upload": {
+      "title": "Drop your music files here",
+      "description": "or click the button below to browse your computer",
+      "button": "Select Files"
+    },
+    "List": {
+      "title": "Uploaded Musics",
+      "completed": "Upload Completed",
+      "uploaded": "uploaded",
+      "error": "Upload Failed"
+    }
+  }
+}

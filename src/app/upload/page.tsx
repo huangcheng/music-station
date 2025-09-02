@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useCallback, useRef } from 'react';
-import { Card, CardContent, Button, Progress } from '@/components';
+import { useTranslations } from 'next-intl';
 import {
   Upload as UploadIcon,
   Music,
@@ -12,7 +12,8 @@ import {
 
 import type { DragEvent, ChangeEvent } from 'react';
 
-import { cn } from '@/lib';
+import { Card, CardContent, Button, Progress } from '@/components';
+import { cn, formatFileSize } from '@/lib';
 
 interface UploadedFile {
   file: File;
@@ -29,21 +30,12 @@ const ACCEPTED_FORMATS = {
   'audio/aac': { ext: 'AAC', icon: FileAudio },
 };
 
-// Move utility function to module scope to satisfy lint rules
-const formatFileSize = (bytes: number) => {
-  if (bytes === 0) return '0 Bytes';
-  const k = 1024;
-  const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-  const i = Math.floor(Math.log(bytes) / Math.log(k));
-  return (
-    Number.parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
-  );
-};
-
 export default function Upload() {
   const [isDragOver, setIsDragOver] = useState(false);
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+
+  const t = useTranslations('Upload');
 
   const handleFiles = useCallback((files: File[]) => {
     const validFiles = files.filter((file) =>
@@ -141,11 +133,9 @@ export default function Upload() {
         {/* Header */}
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold text-gray-900 mb-2 text-balance">
-            Upload Your Music Files
+            {t('title')}
           </h1>
-          <p className="text-gray-600 text-lg">
-            Drag and drop your audio files here or click to browse
-          </p>
+          <p className="text-gray-600 text-lg">{t('description')}</p>
         </div>
 
         {/* Upload Area */}
@@ -176,18 +166,16 @@ export default function Upload() {
 
                 <div className="space-y-2">
                   <h3 className="text-xl font-semibold text-gray-900">
-                    Drop your music files here
+                    {t('Upload.title')}
                   </h3>
-                  <p className="text-gray-600">
-                    or click the button below to browse your computer
-                  </p>
+                  <p className="text-gray-600">{t('Upload.description')}</p>
                 </div>
 
                 <Button
                   onClick={() => fileInputRef.current?.click()}
                   className="bg-gray-800 hover:bg-gray-700 text-white shadow-lg hover:shadow-xl transition-shadow"
                 >
-                  Select Files
+                  {t('Upload.button')}
                 </Button>
 
                 <input
@@ -204,34 +192,12 @@ export default function Upload() {
           </CardContent>
         </Card>
 
-        {/* Supported Formats */}
-        <Card className="mb-8 shadow-lg drop-shadow-md border-gray-200">
-          <CardContent className="p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">
-              Supported Audio Formats
-            </h3>
-            <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-              {Object.entries(ACCEPTED_FORMATS).map(
-                ([mimeType, { ext, icon: Icon }]) => (
-                  <div
-                    key={mimeType}
-                    className="flex items-center space-x-2 p-3 bg-gray-50 rounded-lg shadow-sm hover:shadow-md transition-shadow border border-gray-200"
-                  >
-                    <Icon className="h-5 w-5 text-gray-700" />
-                    <span className="font-medium text-gray-900">{ext}</span>
-                  </div>
-                ),
-              )}
-            </div>
-          </CardContent>
-        </Card>
-
         {/* Uploaded Files */}
         {uploadedFiles.length > 0 && (
           <Card className="shadow-lg drop-shadow-md border-gray-200">
             <CardContent className="p-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                Uploaded Files ({uploadedFiles.length})
+                {t('List.title')} ({uploadedFiles.length})
               </h3>
               <div className="space-y-4">
                 {uploadedFiles.map((uploadedFile) => {
@@ -278,14 +244,21 @@ export default function Upload() {
                               className="h-2"
                             />
                             <p className="text-xs text-gray-600">
-                              {Math.round(uploadedFile.progress)}% uploaded
+                              {Math.round(uploadedFile.progress)}%{' '}
+                              {t('List.uploaded')}
                             </p>
                           </div>
                         )}
 
                         {uploadedFile.status === 'completed' && (
                           <p className="text-sm text-gray-700 font-medium">
-                            Upload completed
+                            {t('List.completed')}
+                          </p>
+                        )}
+
+                        {uploadedFile.status === 'error' && (
+                          <p className="text-sm text-red-600 font-medium">
+                            {t('List.error')}
                           </p>
                         )}
                       </div>
