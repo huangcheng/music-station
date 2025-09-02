@@ -4,7 +4,6 @@ import { fileURLToPath } from 'node:url';
 
 import { FlatCompat } from '@eslint/eslintrc';
 import unicorn from 'eslint-plugin-unicorn';
-
 import { recommended } from '@cspell/eslint-plugin/configs';
 
 const __filename = fileURLToPath(import.meta.url);
