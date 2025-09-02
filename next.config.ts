@@ -6,8 +6,17 @@ const nextConfig: NextConfig = {
   /* config options here */
   experimental: {
     serverActions: {
-      bodySizeLimit: '50mb',
+      bodySizeLimit: '200mb',
     },
+  },
+  async redirects() {
+    return [
+      {
+        source: '/',
+        destination: '/winamp',
+        permanent: true,
+      },
+    ];
   },
 };
 

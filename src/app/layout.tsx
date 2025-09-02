@@ -3,6 +3,8 @@ import { NextIntlClientProvider } from 'next-intl';
 import type { ReactNode } from 'react';
 import type { Metadata } from 'next';
 
+import { QueryProvider } from '@/providers';
+
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -18,7 +20,9 @@ export default async function RootLayout({
   return (
     <html lang="en">
       <body className="antialiased">
-        <NextIntlClientProvider>{children}</NextIntlClientProvider>
+        <NextIntlClientProvider>
+          <QueryProvider>{children}</QueryProvider>
+        </NextIntlClientProvider>
       </body>
     </html>
   );

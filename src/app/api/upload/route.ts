@@ -3,12 +3,17 @@ import path from 'node:path';
 
 import { NextResponse } from 'next/server';
 import { forkJoin, of, from, lastValueFrom } from 'rxjs';
-import { switchMap, map, catchError } from 'rxjs/operators';
+import { switchMap, map, tap, catchError } from 'rxjs/operators';
+import { PrismaClient } from '@prisma/client';
+import { parseBuffer } from 'music-metadata';
 import pino from 'pino';
 
 import type { Observable } from 'rxjs';
 
+import { getStorageLocation } from '@/lib';
+
 type SavedFile = {
+  buffer?: Buffer;
   field: string;
   originalName?: string;
   fileName: string;
@@ -16,12 +21,14 @@ type SavedFile = {
   url: string;
 };
 
-const UPLOAD_DIR = path.join(process.cwd(), 'public', 'uploads');
+const prisma = new PrismaClient();
 
 const logger = pino({ name: 'upload-route' });
 
+const musicPath = path.join(getStorageLocation(), 'musics');
+
 async function ensureUploadDir() {
-  await fs.mkdir(UPLOAD_DIR, { recursive: true });
+  await fs.mkdir(musicPath, { recursive: true });
 }
 
 export async function POST(req: Request) {
@@ -43,11 +50,12 @@ export async function POST(req: Request) {
               switchMap((buffer) => {
                 // const safeName = `${Date.now()}_${path.basename(file.name)}`;
                 const fileName = path.basename(file.name);
-                const filePath = path.join(UPLOAD_DIR, fileName);
+                const filePath = path.join(musicPath, fileName);
 
                 return from(fs.writeFile(filePath, buffer)).pipe(
                   map(() => ({
                     field,
+                    buffer,
                     // originalName: file.name,
                     fileName,
                     size: buffer.length,
@@ -58,6 +66,22 @@ export async function POST(req: Request) {
             );
           })
           .filter(Boolean) as Observable<SavedFile>[],
+      ),
+    ),
+    switchMap((files) =>
+      forkJoin(
+        files.map((file) => {
+          const { buffer } = file;
+
+          return from(parseBuffer(buffer!)).pipe(
+            tap(console.log),
+            map(() => {
+              delete file.buffer;
+
+              return file;
+            }),
+          );
+        }),
       ),
     ),
     map((files) => NextResponse.json({ success: true, files })),
@@ -79,10 +103,10 @@ export async function POST(req: Request) {
 export async function GET() {
   try {
     await ensureUploadDir();
-    const files = await fs.readdir(UPLOAD_DIR);
+    const files = await fs.readdir(musicPath);
     const list = await Promise.all(
       files.map(async (fileName) => {
-        const stats = await fs.stat(path.join(UPLOAD_DIR, fileName));
+        const stats = await fs.stat(path.join(musicPath, fileName));
         return {
           fileName,
           size: stats.size,

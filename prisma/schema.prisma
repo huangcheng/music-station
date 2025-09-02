@@ -1,0 +1,63 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "linux-musl"]
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Genre {
+  id    Int     @id @default(autoincrement())
+  name  String  @unique
+  Music Music[]
+}
+
+model Album {
+  id     Int     @id @default(autoincrement())
+  title  String
+  artist String
+  year   Int?
+  Music  Music[]
+}
+
+model Artist {
+  id           Int           @id @default(autoincrement())
+  name         String        @unique
+  // relation entries to Music via the join table
+  MusicArtists MusicArtist[]
+}
+
+model Music {
+  id           Int           @id @default(autoincrement())
+  title        String
+  // legacy free-text artist name removed in favor of relations
+  album        String?
+  genreId      Int
+  genre        Genre         @relation(fields: [genreId], references: [id])
+  year         Int?
+  Album        Album?        @relation(fields: [albumId], references: [id])
+  albumId      Int?
+  // relation entries to Artist via the join table
+  MusicArtists MusicArtist[]
+}
+
+// explicit join table to represent many-to-many between Music and Artist
+model MusicArtist {
+  musicId  Int
+  artistId Int
+
+  // optional metadata about the contribution (e.g. "primary", "featured", "remix", or the featured artist name)
+  role String?
+  // optional ordering if you want to preserve artist order on a track
+  ord  Int?
+
+  music  Music  @relation(fields: [musicId], references: [id])
+  artist Artist @relation(fields: [artistId], references: [id])
+
+  @@id([musicId, artistId])
+}
