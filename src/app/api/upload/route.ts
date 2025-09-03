@@ -19,7 +19,7 @@ import pino from 'pino';
 
 import type { NextRequest } from 'next/server';
 
-import { getStorageLocation, isMusicFile, musicExtend } from '@/lib';
+import { isMusicFile, musicExtend } from '@/lib';
 
 type SavedFile = {
   buffer?: Buffer;
@@ -35,7 +35,11 @@ const prisma = new PrismaClient();
 
 const logger = pino({ name: 'upload-route' });
 
+const getStorageLocation = (): string =>
+  process.env.NEXT_PUBLIC_STORAGE_PREFIX ?? path.join(process.cwd(), 'data');
+
 const storage = getStorageLocation();
+
 const musics = path.join(storage, 'musics');
 const covers = path.join(storage, 'covers');
 

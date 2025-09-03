@@ -1,5 +1,3 @@
-import path from 'node:path';
-
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
@@ -22,6 +20,3 @@ export const formatFileSize = (bytes: number): string => {
     Number.parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
   );
 };
-
-export const getStorageLocation = (): string =>
-  process.env.NEXT_PUBLIC_STORAGE_PREFIX ?? path.join(process.cwd(), 'data');

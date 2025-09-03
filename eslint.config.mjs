@@ -14,6 +14,14 @@ const compat = new FlatCompat({
 });
 
 const eslintConfig = [
+  {
+    ignores: [
+      '**/dist/**',
+      '**/node_modules/**',
+      '**/.next/**',
+      '**/generated/**',
+    ],
+  },
   //...compat.extends('next/core-web-vitals', 'next/typescript'),
   unicorn.configs.recommended,
   // jsdoc.configs['flat/recommended-typescript-error'],
