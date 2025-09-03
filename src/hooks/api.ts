@@ -5,10 +5,10 @@ import { omit } from 'es-toolkit';
 
 import type { Observable } from 'rxjs';
 
-import type { Response, Music } from '@/types';
+import type { Response, Music, Artist } from '@/types';
 
 export const fetch$ = <R>(url: string, init?: RequestInit): Observable<R> =>
-  fromFetch(url, {
+  fromFetch(`/api${url}`, {
     headers: {
       'Content-Type': 'application/json',
       Accept: 'application/json',
@@ -26,4 +26,6 @@ export const fetch$ = <R>(url: string, init?: RequestInit): Observable<R> =>
     },
   });
 
-export const fetchMusic$ = () => fetch$<Music[]>('/api/music');
+export const fetchMusic$ = () => fetch$<Music[]>('/music');
+
+export const fetchArtists$ = () => fetch$<Artist[]>('/artists');

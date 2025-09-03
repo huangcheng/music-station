@@ -19,23 +19,23 @@ model Genre {
 }
 
 model Album {
-  id     Int     @id @default(autoincrement())
-  name   String  @unique
-  year   Int?
-  date   String?
-  tracks Int?
+  id       Int     @id @default(autoincrement())
+  name     String  @unique
+  year     Int?
+  date     String?
+  tracks   Int?
+  artistId Int?
 
-  musics  Music[]
-  artists Artist[]
+  musics Music[]
+  artist Artist? @relation(fields: [artistId], references: [id])
 }
 
 model Artist {
-  id      Int    @id @default(autoincrement())
-  name    String @unique
-  albumId Int?
+  id   Int    @id @default(autoincrement())
+  name String @unique
 
-  album  Album?  @relation(fields: [albumId], references: [id])
   musics Music[]
+  albums Album[]
 }
 
 model Music {

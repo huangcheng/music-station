@@ -10,15 +10,15 @@ CREATE TABLE "Album" (
     "name" TEXT NOT NULL,
     "year" INTEGER,
     "date" TEXT,
-    "tracks" INTEGER
+    "tracks" INTEGER,
+    "artistId" INTEGER,
+    CONSTRAINT "Album_artistId_fkey" FOREIGN KEY ("artistId") REFERENCES "Artist" ("id") ON DELETE SET NULL ON UPDATE CASCADE
 );
 
 -- CreateTable
 CREATE TABLE "Artist" (
     "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-    "name" TEXT NOT NULL,
-    "albumId" INTEGER,
-    CONSTRAINT "Artist_albumId_fkey" FOREIGN KEY ("albumId") REFERENCES "Album" ("id") ON DELETE SET NULL ON UPDATE CASCADE
+    "name" TEXT NOT NULL
 );
 
 -- CreateTable

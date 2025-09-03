@@ -228,6 +228,14 @@ export async function POST(req: Request) {
                                   ).pipe(catchError(() => of(null))),
                                 ),
                               ),
+                              from(
+                                prisma.album.update({
+                                  where: { id: album.id },
+                                  data: {
+                                    artistId: artist.id,
+                                  },
+                                }),
+                              ),
                             ]),
                           ),
                         ),
@@ -249,7 +257,7 @@ export async function POST(req: Request) {
     ),
     map((files) => NextResponse.json({ success: true, files })),
     catchError((error) => {
-      logger.error('Upload error:', error.message || error);
+      console.error(error.message ?? error);
 
       return of(
         NextResponse.json(

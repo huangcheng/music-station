@@ -54,7 +54,7 @@ export async function GET() {
                   album: m.album?.name ?? t('Unknown Album'),
                 };
 
-                return omit(record, ['id', 'hash', 'artistId', 'albumId']);
+                return omit(record, ['hash', 'artistId', 'albumId']);
               }),
             ),
           ),

@@ -1,5 +1,7 @@
 import { MUSIC_EXTENSIONS } from '@/constants';
 
+import type { Artist } from '@/types';
+
 export const isMusicFile = (filename: string): boolean => {
   const extension = filename.split('.').pop()?.toLowerCase();
 

@@ -5,18 +5,18 @@ import { useShallow } from 'zustand/react/shallow';
 
 import type { ReactElement, ReactNode } from 'react';
 
-import { useMusicStore } from '@/stores';
+import { useMediaStore } from '@/stores';
 
 export default function Layout({
   children,
 }: {
   children: ReactNode;
 }): ReactElement {
-  const fetchMusic = useMusicStore(useShallow(({ fetchMusic }) => fetchMusic));
+  const fetch = useMediaStore(useShallow(({ fetch }) => fetch));
 
   useEffect(() => {
-    void fetchMusic();
-  }, [fetchMusic]);
+    void fetch();
+  }, [fetch]);
 
   return <>{children}</>;
 }

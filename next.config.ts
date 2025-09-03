@@ -13,7 +13,7 @@ const nextConfig: NextConfig = {
     return [
       {
         source: '/',
-        destination: '/winamp',
+        destination: '/foobar2000',
         permanent: true,
       },
     ];
