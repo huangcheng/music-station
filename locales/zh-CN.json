@@ -1,4 +1,8 @@
 {
+  "Music": {
+    "Unknown Artist": "未知艺术家",
+    "Unknown Album": "未知专辑"
+  },
   "Upload": {
     "title": "上传您的音乐文件",
     "description": "将音频文件拖放到此处或点击以浏览",

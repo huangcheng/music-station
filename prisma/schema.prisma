@@ -20,7 +20,7 @@ model Genre {
 
 model Album {
   id     Int     @id @default(autoincrement())
-  title  String  @unique
+  name   String  @unique
   year   Int?
   date   String?
   tracks Int?
@@ -41,13 +41,14 @@ model Artist {
 model Music {
   id       Int          @id @default(autoincrement())
   hash     String       @unique
-  title    String
+  name     String
   year     Int?
   artistId Int?
   albumId  Int?
   track    Int?
   disk     Int?
   cover    String?
+  file     String
   date     String?
   // relation entries to Artist via the join table
   genre    MusicGenre[]

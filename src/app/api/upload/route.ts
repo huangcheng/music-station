@@ -17,7 +17,9 @@ import { PrismaClient } from '@prisma/client';
 import { parseBuffer } from 'music-metadata';
 import pino from 'pino';
 
-import { getStorageLocation } from '@/lib';
+import type { NextRequest } from 'next/server';
+
+import { getStorageLocation, isMusicFile, musicExtend } from '@/lib';
 
 type SavedFile = {
   buffer?: Buffer;
@@ -94,7 +96,7 @@ export async function POST(req: Request) {
             map((meta) => {
               const { common } = meta;
 
-              const title = common.title ?? path.parse(file.fileName).name;
+              const name = common.title ?? path.parse(file.fileName).name;
               // const artists = common.artists ?? common.artist?.split(',') ?? [];
               const artist = common.artist ?? 'Unknown Artist';
               const genre = common.genre ?? [];
@@ -108,7 +110,7 @@ export async function POST(req: Request) {
 
               return {
                 hash,
-                title,
+                name,
                 artist,
                 album,
                 genre,
@@ -123,7 +125,7 @@ export async function POST(req: Request) {
             switchMap(
               ({
                 hash,
-                title,
+                name,
                 artist,
                 album,
                 genre,
@@ -169,9 +171,9 @@ export async function POST(req: Request) {
                       ),
                       album: from(
                         prisma.album.upsert({
-                          where: { title: album },
+                          where: { name: album },
                           update: {},
-                          create: { title: album, year, date, tracks },
+                          create: { name: album, year, date, tracks },
                         }),
                       ),
                     }).pipe(
@@ -180,7 +182,7 @@ export async function POST(req: Request) {
                           prisma.music.upsert({
                             where: { hash },
                             update: {
-                              title,
+                              name,
                               cover,
                               disk,
                               track,
@@ -188,10 +190,11 @@ export async function POST(req: Request) {
                               date,
                               albumId: album.id,
                               artistId: artist.id,
+                              file: file.fileName,
                             },
                             create: {
                               hash,
-                              title,
+                              name,
                               cover,
                               disk,
                               year,
@@ -199,6 +202,7 @@ export async function POST(req: Request) {
                               track,
                               albumId: album.id,
                               artistId: artist.id,
+                              file: file.fileName,
                             },
                           }),
                         ).pipe(
@@ -217,7 +221,7 @@ export async function POST(req: Request) {
                                         },
                                       },
                                     }),
-                                  ),
+                                  ).pipe(catchError(() => of(null))),
                                 ),
                               ),
                             ]),
@@ -255,28 +259,58 @@ export async function POST(req: Request) {
   return await lastValueFrom(ob$);
 }
 
-export async function GET() {
-  try {
-    await ensureUploadDir();
-    const files = await fs.readdir(musics);
-    const list = await Promise.all(
-      files.map(async (fileName) => {
-        const stats = await fs.stat(path.join(musics, fileName));
-        return {
-          fileName,
-          size: stats.size,
-          url: `/uploads/${fileName}`,
-          createdAt: stats.birthtime,
-        };
-      }),
-    );
+export async function GET(request: NextRequest) {
+  const ob$ = of(null).pipe(
+    map(() => {
+      const { searchParams } = new URL(request.url);
 
-    return NextResponse.json({ success: true, files: list });
-  } catch (error) {
-    console.error('List upload error:', error);
-    return NextResponse.json(
-      { success: false, error: String(error) },
-      { status: 500 },
-    );
-  }
+      return searchParams.get('file');
+    }),
+    switchMap((file) =>
+      iif(
+        () => file !== null,
+        defer(() => {
+          const isMusic = isMusicFile(file!);
+
+          const dir = isMusic ? musics : covers;
+
+          const filePath = path.join(dir, path.basename(file!));
+
+          return from(fs.readFile(filePath)).pipe(
+            switchMap((buffer) =>
+              from(fs.stat(filePath)).pipe(
+                map((stat) => ({
+                  buffer,
+                  stat,
+                })),
+              ),
+            ),
+            map(
+              ({ buffer, stat }) =>
+                new NextResponse(buffer as BodyInit, {
+                  status: 200,
+                  headers: {
+                    'Content-Type': isMusic
+                      ? musicExtend(file!).mimeType
+                      : `image/${path.extname(filePath).slice(1)}`,
+                    'Content-Length': stat.size.toString(),
+                    'Cache-Control': 'public, max-age=31536000, immutable',
+                  },
+                }),
+            ),
+            catchError((error) => {
+              logger.error('Read file error:', error.message || error);
+
+              return of(
+                NextResponse.json({ msg: 'File not found' }, { status: 404 }),
+              );
+            }),
+          );
+        }),
+        of(NextResponse.json({ msg: 'No file specified' }, { status: 400 })),
+      ),
+    ),
+  );
+
+  return await lastValueFrom(ob$);
 }

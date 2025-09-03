@@ -1,4 +1,8 @@
 {
+  "Music": {
+    "Unknown Artist": "Unknown Artist",
+    "Unknown Album": "Unknown Album"
+  },
   "Upload": {
     "title": "Upload Your Music Files",
     "description": "Drag and drop your audio files here or click to browse",

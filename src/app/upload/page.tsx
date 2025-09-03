@@ -37,72 +37,86 @@ export default function Upload() {
 
   const t = useTranslations('Upload');
 
-  const handleFiles = useCallback((files: File[]) => {
-    const validFiles = files.filter((file) =>
-      Object.keys(ACCEPTED_FORMATS).includes(file.type),
-    );
+  const handleFiles = useCallback(
+    (files: File[]) => {
+      const validFiles = files.filter((file) =>
+        Object.keys(ACCEPTED_FORMATS).includes(file.type),
+      );
 
-    for (const file of validFiles) {
-      const id = Math.random().toString(36).slice(2, 11);
-      const newFile: UploadedFile = {
-        file,
-        progress: 0,
-        status: 'uploading',
-        id,
-      };
+      for (const file of validFiles) {
+        const id = Math.random().toString(36).slice(2, 11);
+        const newFile: UploadedFile = {
+          file,
+          progress: 0,
+          status: 'uploading',
+          id,
+        };
 
-      setUploadedFiles((prev) => [...prev, newFile]);
+        setUploadedFiles((prev) => [...prev, newFile]);
 
-      // upload with XMLHttpRequest so we can track progress per file
-      const formData = new FormData();
-      formData.append('file', file);
+        // upload with XMLHttpRequest so we can track progress per file
+        const formData = new FormData();
 
-      const xhr = new XMLHttpRequest();
-      xhr.open('POST', '/api/upload');
+        formData.append('file', file);
 
-      xhr.upload.addEventListener('progress', (e) => {
-        if (e.lengthComputable) {
-          const percent = (e.loaded / e.total) * 100;
-          setUploadedFiles((prev) =>
-            prev.map((f) => (f.id === id ? { ...f, progress: percent } : f)),
-          );
-        }
-      });
+        const xhr = new XMLHttpRequest();
 
-      xhr.addEventListener('load', () => {
-        if (xhr.status >= 200 && xhr.status < 300) {
-          setUploadedFiles((prev) =>
-            prev.map((f) =>
-              f.id === id ? { ...f, progress: 100, status: 'completed' } : f,
-            ),
-          );
-        } else {
+        xhr.open('POST', '/api/upload');
+
+        xhr.upload.addEventListener('progress', (e) => {
+          if (e.lengthComputable) {
+            const percent = (e.loaded / e.total) * 100;
+
+            setUploadedFiles((prev) =>
+              prev.map((f) => (f.id === id ? { ...f, progress: percent } : f)),
+            );
+          }
+        });
+
+        xhr.addEventListener('load', () => {
+          if (xhr.status >= 200 && xhr.status < 300) {
+            setUploadedFiles((prev) =>
+              prev.map((f) =>
+                f.id === id ? { ...f, progress: 100, status: 'completed' } : f,
+              ),
+            );
+          } else {
+            setUploadedFiles((prev) =>
+              prev.map((f) => (f.id === id ? { ...f, status: 'error' } : f)),
+            );
+          }
+        });
+
+        // eslint-disable-next-line unicorn/prefer-add-event-listener
+        xhr.onerror = () => {
           setUploadedFiles((prev) =>
             prev.map((f) => (f.id === id ? { ...f, status: 'error' } : f)),
           );
-        }
-      });
+        };
 
-      // eslint-disable-next-line unicorn/prefer-add-event-listener
-      xhr.onerror = () => {
-        setUploadedFiles((prev) =>
-          prev.map((f) => (f.id === id ? { ...f, status: 'error' } : f)),
-        );
-      };
+        xhr.send(formData);
+      }
+    },
+    [setUploadedFiles],
+  );
 
-      xhr.send(formData);
-    }
-  }, []);
+  const handleDragOver = useCallback(
+    (e: DragEvent) => {
+      e.preventDefault();
 
-  const handleDragOver = useCallback((e: DragEvent) => {
-    e.preventDefault();
-    setIsDragOver(true);
-  }, []);
+      setIsDragOver(true);
+    },
+    [setIsDragOver],
+  );
 
-  const handleDragLeave = useCallback((e: DragEvent) => {
-    e.preventDefault();
-    setIsDragOver(false);
-  }, []);
+  const handleDragLeave = useCallback(
+    (e: DragEvent) => {
+      e.preventDefault();
+
+      setIsDragOver(false);
+    },
+    [setIsDragOver],
+  );
 
   const handleDrop = useCallback(
     (e: DragEvent) => {
@@ -110,22 +124,27 @@ export default function Upload() {
       setIsDragOver(false);
 
       const files = [...e.dataTransfer.files];
+
       handleFiles(files);
     },
-    [handleFiles],
+    [handleFiles, setIsDragOver],
   );
 
   const handleFileSelect = useCallback(
     (e: ChangeEvent<HTMLInputElement>) => {
       const files = [...(e.target.files || [])];
+
       handleFiles(files);
     },
     [handleFiles],
   );
 
-  const removeFile = (fileId: string) => {
-    setUploadedFiles((prev) => prev.filter((file) => file.id !== fileId));
-  };
+  const removeFile = useCallback(
+    (fileId: string) => {
+      setUploadedFiles((prev) => prev.filter((file) => file.id !== fileId));
+    },
+    [setUploadedFiles],
+  );
 
   return (
     <div className="min-h-screen bg-white p-4 md:p-8">
