@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { forkJoin, from, of, lastValueFrom } from 'rxjs';
+import { forkJoin, from, iif, of, defer, lastValueFrom } from 'rxjs';
 import { switchMap, map, catchError } from 'rxjs/operators';
 import { PrismaClient } from '@prisma/client';
 import { getTranslations } from 'next-intl/server';
@@ -19,41 +19,48 @@ export async function GET() {
     }),
   ).pipe(
     switchMap((music) =>
-      forkJoin(
-        music.map((m) =>
-          from(
-            client.musicGenre.findMany({
-              where: { musicId: m.id },
-              include: { genre: true },
-            }),
+      iif(
+        () => music.length > 0,
+        defer(() =>
+          forkJoin(
+            music.map((m) =>
+              from(
+                client.musicGenre.findMany({
+                  where: { musicId: m.id },
+                  include: { genre: true },
+                }),
+              ).pipe(
+                map((genre) => ({
+                  ...m,
+                  genre,
+                })),
+              ),
+            ),
           ).pipe(
-            map((genre) => ({
-              ...m,
-              genre,
-            })),
+            switchMap((music) =>
+              from(getTranslations('Music')).pipe(
+                map((t) => ({
+                  music,
+                  t,
+                })),
+              ),
+            ),
+            map(({ music, t }) =>
+              music.map((m) => {
+                const record = {
+                  ...m,
+                  genre: m.genre.map((g) => g.genre.name),
+                  artist: m.artist?.name ?? t('Unknown Artist'),
+                  album: m.album?.name ?? t('Unknown Album'),
+                };
+
+                return omit(record, ['id', 'hash', 'artistId', 'albumId']);
+              }),
+            ),
           ),
         ),
+        of([]),
       ),
-    ),
-    switchMap((music) =>
-      from(getTranslations('Music')).pipe(
-        map((t) => ({
-          music,
-          t,
-        })),
-      ),
-    ),
-    map(({ music, t }) =>
-      music.map((m) => {
-        const record = {
-          ...m,
-          genre: m.genre.map((g) => g.genre.name),
-          artist: m.artist?.name ?? t('Unknown Artist'),
-          album: m.album?.name ?? t('Unknown Album'),
-        };
-
-        return omit(record, ['id', 'hash', 'artistId', 'albumId']);
-      }),
     ),
     map((music) => NextResponse.json({ data: music })),
     catchError(() => of(NextResponse.json({ data: [] }))),
