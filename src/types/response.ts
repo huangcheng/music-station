@@ -1,5 +1,10 @@
+export type Response<T> = {
+  message?: string;
+  data: T;
+};
+
 export type Music = {
-  title: string;
+  name: string;
   artist: string;
   album: string;
   track: number;
