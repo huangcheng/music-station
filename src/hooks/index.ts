@@ -1,3 +1,3 @@
-export * from './music';
+export * from './media';
 
 export * from './api';

@@ -23,6 +23,7 @@ export async function GET() {
         albums: albums.map((album) => omit(album, ['artistId'])),
       })),
     ),
+    map((music) => music.filter((m) => m.music.length > 0)),
     map((data) => NextResponse.json({ data })),
     catchError((err) =>
       of(NextResponse.json({ message: err.message }, { status: 500 })),

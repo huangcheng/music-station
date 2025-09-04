@@ -1,7 +1,6 @@
 'use client';
 
-import { useCallback, useMemo, useState } from 'react';
-import { useShallow } from 'zustand/react/shallow';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import { useImmer } from 'use-immer';
 import { useTranslations } from 'next-intl';
 import {
@@ -19,17 +18,16 @@ import {
 import type { ReactElement } from 'react';
 
 import { Button } from '@/components';
-import { useMediaStore } from '@/stores';
 import { toLibraryTree } from '@/lib';
+import {
+  useAddToDefaultPlaylistMutation,
+  useArtistsQuery,
+  useMusicQuery,
+  usePlaylistsQuery,
+  useUpdatePlaylistMutation,
+} from '@/hooks';
 
-interface Track {
-  id: number;
-  artist: string;
-  album: string;
-  title: string;
-  duration: string;
-  playing?: boolean;
-}
+import type { Playlist, Music as MusicType } from '@/types';
 
 interface LibraryItem {
   id: number;
@@ -40,16 +38,26 @@ interface LibraryItem {
 }
 
 export default function Foobar2000Player() {
+  const audio = useRef<HTMLAudioElement | null>(null);
+
   const t = useTranslations('Player');
-  const { artists } = useMediaStore(useShallow(({ artists }) => ({ artists })));
 
   const [state, setState] = useImmer<{
     expandedKeys: number[];
+    currentPlaylist: number;
   }>({
     expandedKeys: [0],
+    currentPlaylist: 0,
   });
 
-  const { expandedKeys } = state;
+  const { expandedKeys, currentPlaylist } = state;
+
+  const { data: artists = [] } = useArtistsQuery();
+  const { data: music = [] } = useMusicQuery();
+  const { data: _playlists = [] } = usePlaylistsQuery();
+  const { mutate: createPlaylistMutate, isPending } =
+    useAddToDefaultPlaylistMutation();
+  const { mutate: updatePlaylistMutate } = useUpdatePlaylistMutation();
 
   const tree = useMemo<LibraryItem[]>(
     () =>
@@ -64,36 +72,51 @@ export default function Foobar2000Player() {
     [artists, t],
   );
 
-  console.log(artists);
+  const playlists = useMemo<
+    (Omit<Playlist, 'music'> & { music: MusicType[] })[]
+  >(
+    () =>
+      _playlists?.map(({ music: m, ...rest }) => ({
+        ...rest,
+        music: (m ?? [])
+          .map((id) => music.find((m) => m.id === id))
+          .filter(Boolean) as MusicType[],
+      })),
+    [_playlists, music],
+  );
+
+  const playlist = useMemo(
+    () => playlists?.[currentPlaylist],
+    [playlists, currentPlaylist],
+  );
 
   const [isPlaying, setIsPlaying] = useState(false);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [_, setCurrentTrack] = useState(0);
 
-  const tracks: Track[] = [
-    {
-      id: 1,
-      artist: 'F.I.R.飞儿乐团',
-      album: 'F.I.R.',
-      title: 'Lydia',
-      duration: '3:59',
-      playing: true,
+  const addToPlaylist = useCallback(
+    (id: number) => {
+      if (!playlist && !isPending) {
+        createPlaylistMutate({
+          name: 'Default Playlist',
+          music: [id],
+        });
+
+        return;
+      }
+
+      if (playlist && !isPending) {
+        updatePlaylistMutate({
+          id: playlist.id,
+          params: {
+            name: playlist.name,
+            music: [...new Set([...playlist.music.map(({ id }) => id), id])],
+          },
+        });
+      }
     },
-    {
-      id: 2,
-      artist: 'Various Artists',
-      album: 'Compilation',
-      title: 'Sample Track 1',
-      duration: '4:23',
-    },
-    {
-      id: 3,
-      artist: 'Various Artists',
-      album: 'Compilation',
-      title: 'Sample Track 2',
-      duration: '3:45',
-    },
-  ];
+    [playlist, isPending, createPlaylistMutate, updatePlaylistMutate],
+  );
 
   const generateLibraryTree = useCallback(
     (tree: LibraryItem[], level = 0): ReactElement[] =>
@@ -116,6 +139,11 @@ export default function Foobar2000Player() {
                 }
               });
             }}
+            onDoubleClick={() => {
+              if (!children || children.length === 0) {
+                addToPlaylist(id);
+              }
+            }}
           >
             {children ? (
               expandedKeys.includes(id) ? (
@@ -135,7 +163,7 @@ export default function Foobar2000Player() {
             generateLibraryTree(children, level + 1)}
         </div>
       )),
-    [expandedKeys, setState],
+    [expandedKeys, setState, addToPlaylist],
   );
 
   return (
@@ -162,6 +190,8 @@ export default function Foobar2000Player() {
             Help
           </span>
         </div>
+
+        <audio ref={audio} className="opacity-0" />
       </div>
 
       {/* Toolbar */}
@@ -234,7 +264,7 @@ export default function Foobar2000Player() {
         <div className="flex-1 bg-white flex flex-col">
           {/* Playlist Header */}
           <div className="bg-gray-100 border-b border-gray-400 px-2 py-1 text-xs font-semibold">
-            Default Playlist
+            {playlist?.name ?? t('Default Playlist')}
           </div>
 
           {/* Column Headers */}
@@ -254,29 +284,37 @@ export default function Foobar2000Player() {
 
           {/* Playlist Items */}
           <div className="flex-1 overflow-y-auto">
-            {tracks.map((track, index) => (
+            {(playlist?.music ?? []).map(({ id, name, artist, file }) => (
               <div
-                key={track.id}
+                key={id}
                 className={`flex text-xs border-b border-gray-200 hover:bg-blue-50 cursor-pointer ${
-                  track.playing ? 'bg-blue-100' : ''
+                  /* track.playing */ false ? 'bg-blue-100' : ''
                 }`}
-                onClick={() => setCurrentTrack(index)}
+                onClick={() => setCurrentTrack(id)}
+                onDoubleClick={() => {
+                  if (audio.current) {
+                    audio.current.src = `/api/upload?file=${file}`;
+                    audio.current.play();
+
+                    setIsPlaying(true);
+                  }
+                }}
               >
-                <div className="w-8 px-2 py-1 border-r border-gray-200 text-center">
-                  {track.playing && <Play className="w-3 h-3 mx-auto" />}
-                </div>
+                {/*<div className="w-8 px-2 py-1 border-r border-gray-200 text-center">*/}
+                {/*  {track.playing && <Play className="w-3 h-3 mx-auto" />}*/}
+                {/*</div>*/}
                 <div className="flex-1 px-2 py-1 border-r border-gray-200 truncate">
-                  {track.artist}
+                  {artist}
                 </div>
                 <div className="w-16 px-2 py-1 border-r border-gray-200 text-center">
                   1.03
                 </div>
                 <div className="flex-1 px-2 py-1 border-r border-gray-200 truncate">
-                  {track.title}
+                  {name}
                 </div>
-                <div className="w-16 px-2 py-1 text-center">
-                  {track.duration}
-                </div>
+                {/*<div className="w-16 px-2 py-1 text-center">*/}
+                {/*  {track.duration}*/}
+                {/*</div>*/}
               </div>
             ))}
           </div>

@@ -1,6 +1,7 @@
 {
   "Player": {
-    "All Music": "所有音乐"
+    "All Music": "所有音乐",
+    "Default Playlist": "默认播放列表"
   },
   "Music": {
     "Unknown Artist": "未知艺术家",

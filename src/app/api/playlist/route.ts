@@ -9,8 +9,8 @@ import type { CreatePlayListRequest } from '@/types';
 
 const prisma = new PrismaClient();
 
-export async function POST(request: NextRequest) {
-  const ob$ = from<Promise<CreatePlayListRequest>>(request.json()).pipe(
+export async function POST(req: NextRequest) {
+  const ob$ = from<Promise<CreatePlayListRequest>>(req.json()).pipe(
     switchMap(({ name, music }) =>
       from(
         prisma.playlist.create({

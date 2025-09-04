@@ -1,6 +1,7 @@
 {
   "Player": {
-    "All Music": "All Music"
+    "All Music": "All Music",
+    "Default Playlist": "Default Playlist"
   },
   "Music": {
     "Unknown Artist": "Unknown Artist",
