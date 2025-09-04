@@ -53,8 +53,9 @@ model Music {
   // relation entries to Artist via the join table
   genre    MusicGenre[]
 
-  album  Album?  @relation(fields: [albumId], references: [id])
-  artist Artist? @relation(fields: [artistId], references: [id])
+  album     Album?          @relation(fields: [albumId], references: [id])
+  artist    Artist?         @relation(fields: [artistId], references: [id])
+  playlists PlaylistMusic[]
 }
 
 model MusicGenre {
@@ -65,4 +66,21 @@ model MusicGenre {
   genre Genre @relation(fields: [genreId], references: [id])
 
   @@id([musicId, genreId])
+}
+
+model Playlist {
+  id   Int    @id @default(autoincrement())
+  name String
+
+  musics PlaylistMusic[]
+}
+
+model PlaylistMusic {
+  playlistId Int
+  musicId    Int
+
+  playlist Playlist @relation(fields: [playlistId], references: [id])
+  music    Music    @relation(fields: [musicId], references: [id])
+
+  @@id([playlistId, musicId])
 }

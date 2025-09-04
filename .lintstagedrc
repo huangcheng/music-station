@@ -4,5 +4,9 @@
     "eslint --fix",
     "cspell --no-progress",
     "eslint"
+  ],
+  "*.prisma": [
+    "prisma validate",
+    "prisma format"
   ]
 }
