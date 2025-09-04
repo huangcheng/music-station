@@ -5,10 +5,10 @@ import { useShallow } from 'zustand/react/shallow';
 
 import type { ReactElement } from 'react';
 
-import { useMusicStore } from '@/stores';
+import { useMediaStore } from '@/stores';
 
 export default function Winamp(): ReactElement {
-  const music = useMusicStore(useShallow(({ music }) => music));
+  const music = useMediaStore(useShallow(({ music }) => music));
 
   return (
     <div>

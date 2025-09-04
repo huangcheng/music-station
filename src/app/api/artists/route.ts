@@ -10,18 +10,16 @@ export async function GET() {
   const ob$ = from(
     prisma.artist.findMany({
       include: {
-        musics: true,
+        music: true,
         albums: true,
       },
       orderBy: { name: 'asc' },
     }),
   ).pipe(
     map((artist) =>
-      artist.map(({ musics, albums, ...rest }) => ({
+      artist.map(({ music, albums, ...rest }) => ({
         ...rest,
-        musics: musics.map((music) =>
-          omit(music, ['hash', 'albumId', 'albumId']),
-        ),
+        music: music.map((m) => omit(m, ['hash', 'albumId', 'albumId'])),
         albums: albums.map((album) => omit(album, ['artistId'])),
       })),
     ),

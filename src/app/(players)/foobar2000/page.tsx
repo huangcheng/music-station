@@ -20,6 +20,7 @@ import type { ReactElement } from 'react';
 
 import { Button } from '@/components';
 import { useMediaStore } from '@/stores';
+import { toLibraryTree } from '@/lib';
 
 interface Track {
   id: number;
@@ -51,29 +52,23 @@ export default function Foobar2000Player() {
   const { expandedKeys } = state;
 
   const tree = useMemo<LibraryItem[]>(
-    () => [
-      {
-        id: 0,
-        label: t('All Music'),
-        count: artists.reduce((acc, cur) => acc + cur.musics?.length, 0),
-        expandable: false,
-        children: artists.map(({ id, name, musics }) => ({
-          id: id,
-          label: name,
-          count: musics?.length || 0,
-          expandable: true,
-          children: musics.map((music) => ({
-            id: music.id,
-            label: music.name,
-          })),
-        })),
-      },
-    ],
+    () =>
+      toLibraryTree([
+        {
+          id: 0,
+          name: t('All Music'),
+          expandable: false,
+          children: artists,
+        },
+      ]),
     [artists, t],
   );
 
+  console.log(artists);
+
   const [isPlaying, setIsPlaying] = useState(false);
-  const [currentTrack, setCurrentTrack] = useState(0);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [_, setCurrentTrack] = useState(0);
 
   const tracks: Track[] = [
     {

@@ -15,7 +15,7 @@ model Genre {
   id   Int    @id @default(autoincrement())
   name String @unique
 
-  musics MusicGenre[]
+  music MusicGenre[]
 }
 
 model Album {
@@ -26,7 +26,7 @@ model Album {
   tracks   Int?
   artistId Int?
 
-  musics Music[]
+  music  Music[]
   artist Artist? @relation(fields: [artistId], references: [id])
 }
 
@@ -34,7 +34,7 @@ model Artist {
   id   Int    @id @default(autoincrement())
   name String @unique
 
-  musics Music[]
+  music  Music[]
   albums Album[]
 }
 

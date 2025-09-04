@@ -20,7 +20,7 @@ export type Music = {
 export type Artist = {
   id: number;
   name: string;
-  musics: Music[];
+  music: Music[];
   albums: Album[];
 };
 
@@ -29,5 +29,5 @@ export type Album = {
   name: string;
   artist?: string;
   year?: number;
-  musics?: Music[];
+  music?: Music[];
 };
