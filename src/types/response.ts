@@ -31,3 +31,10 @@ export type Album = {
   year?: number;
   music?: Music[];
 };
+
+export type Playlist = {
+  id: number;
+  name: string;
+
+  music: number[];
+};
