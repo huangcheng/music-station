@@ -1,7 +1,8 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef } from 'react';
 import { useImmer } from 'use-immer';
+import { useMachine } from '@xstate/react';
 import { useTranslations } from 'next-intl';
 import {
   Play,
@@ -26,6 +27,7 @@ import {
   usePlaylistsQuery,
   useUpdatePlaylistMutation,
 } from '@/hooks';
+import { playerMachine } from '@/app/machines';
 
 import type { Playlist, Music as MusicType } from '@/types';
 
@@ -45,14 +47,18 @@ export default function Foobar2000Player() {
   const [state, setState] = useImmer<{
     expandedKeys: number[];
     currentPlaylist: number;
-    currentTrack?: number;
   }>({
     expandedKeys: [0],
     currentPlaylist: -1,
-    currentTrack: undefined,
   });
 
-  const { expandedKeys, currentPlaylist, currentTrack } = state;
+  const { expandedKeys, currentPlaylist } = state;
+
+  const [snapshot, send] = useMachine(playerMachine, {
+    input: { volume: 100, src: '' },
+  });
+
+  const { status, volume, src, track } = snapshot?.context ?? {};
 
   const { data: artists = [] } = useArtistsQuery();
   const { data: music = [] } = useMusicQuery();
@@ -100,8 +106,6 @@ export default function Foobar2000Player() {
     () => playlists.find(({ id }) => id === currentPlaylist),
     [playlists, currentPlaylist],
   );
-
-  const [isPlaying, setIsPlaying] = useState(false);
 
   const addToPlaylist = useCallback(
     (id: number) => {
@@ -179,6 +183,36 @@ export default function Foobar2000Player() {
     }
   }, [playlists, currentPlaylist, setState]);
 
+  useEffect(() => {
+    if (audio.current && volume !== undefined && volume >= 0) {
+      audio.current.volume = Math.min(volume / 100, 1);
+    }
+  }, [audio, volume]);
+
+  useEffect(() => {
+    if (audio.current && src !== undefined) {
+      audio.current.src = src;
+    }
+  }, [audio, src]);
+
+  useEffect(() => {
+    if (audio.current) {
+      switch (status) {
+        case 'playing': {
+          void audio.current.play();
+          break;
+        }
+        case 'paused':
+        case 'stopped': {
+          audio.current.pause();
+        }
+        default: {
+          break;
+        }
+      }
+    }
+  }, [audio, status, track]);
+
   return (
     <div className="h-screen bg-gray-200 flex flex-col font-sans text-sm">
       {/* Menu Bar */}
@@ -204,7 +238,13 @@ export default function Foobar2000Player() {
           </span>
         </div>
 
-        <audio ref={audio} className="opacity-0" />
+        <audio
+          ref={audio}
+          className="opacity-0"
+          onEnded={() => {
+            send({ type: 'STOP' });
+          }}
+        />
       </div>
 
       {/* Toolbar */}
@@ -213,9 +253,9 @@ export default function Foobar2000Player() {
           variant="ghost"
           size="sm"
           className="h-6 w-6 p-0 hover:bg-gray-200"
-          onClick={() => setIsPlaying(!isPlaying)}
+          onClick={() => send({ type: 'TOGGLE_PLAY' })}
         >
-          {isPlaying ? (
+          {status === 'playing' ? (
             <Pause className="w-3 h-3" />
           ) : (
             <Play className="w-3 h-3" />
@@ -225,6 +265,7 @@ export default function Foobar2000Player() {
           variant="ghost"
           size="sm"
           className="h-6 w-6 p-0 hover:bg-gray-200"
+          onClick={() => send({ type: 'STOP' })}
         >
           <Square className="w-3 h-3" />
         </Button>
@@ -232,6 +273,27 @@ export default function Foobar2000Player() {
           variant="ghost"
           size="sm"
           className="h-6 w-6 p-0 hover:bg-gray-200"
+          onClick={() => {
+            const tracks = playlist?.music ?? [];
+
+            if (tracks.length > 0) {
+              send({ type: 'STOP' });
+
+              const currentIndex = tracks.findIndex(({ id }) => id === track);
+              const prevIndex =
+                (currentIndex - 1 + tracks.length) % tracks.length;
+
+              const music = tracks[prevIndex];
+
+              const { file, id } = music;
+
+              send({
+                type: 'PLAY',
+                src: `/api/upload?file=${file}`,
+                track: id,
+              });
+            }
+          }}
         >
           <SkipBack className="w-3 h-3" />
         </Button>
@@ -239,6 +301,25 @@ export default function Foobar2000Player() {
           variant="ghost"
           size="sm"
           className="h-6 w-6 p-0 hover:bg-gray-200"
+          onClick={() => {
+            const tracks = playlist?.music ?? [];
+
+            if (tracks.length > 0) {
+              send({ type: 'STOP' });
+
+              const currentIndex = tracks.findIndex(({ id }) => id === track);
+              const nextIndex = (currentIndex + 1) % tracks.length;
+              const music = tracks[nextIndex];
+
+              const { file, id } = music;
+
+              send({
+                type: 'PLAY',
+                src: `/api/upload?file=${file}`,
+                track: id,
+              });
+            }
+          }}
         >
           <SkipForward className="w-3 h-3" />
         </Button>
@@ -298,36 +379,41 @@ export default function Foobar2000Player() {
           {/* Playlist Items */}
           <div className="flex-1 overflow-y-auto">
             {(playlist?.music ?? []).map(
-              ({ id, name, artist, file, duration, track }) => (
+              ({ id, name, artist, file, duration, track: trackNo }) => (
                 <div
                   key={id}
                   className={`flex text-xs border-b border-gray-200 hover:bg-blue-50 cursor-pointer ${
-                    id === currentTrack ? 'bg-blue-100' : ''
+                    id === track ? 'bg-blue-100' : ''
                   }`}
-                  onClick={() => {
-                    setState((draft) => {
-                      draft.currentTrack = id;
-                    });
-                  }}
+                  // onClick={() => {
+                  //   setState((draft) => {
+                  //     draft.currentTrack = id;
+                  //   });
+                  // }}
                   onDoubleClick={() => {
-                    if (audio.current) {
-                      audio.current.src = `/api/upload?file=${file}`;
-                      audio.current.play();
+                    if (id === track) {
+                      send({ type: 'TOGGLE_PLAY' });
+                    } else {
+                      if (status === 'playing') {
+                        send({ type: 'STOP' });
+                      }
 
-                      setIsPlaying(true);
+                      send({
+                        type: 'PLAY',
+                        src: `/api/upload?file=${file}`,
+                        track: id,
+                      });
                     }
                   }}
                 >
                   <div className="w-8 px-2 py-1 border-r border-gray-200 text-center">
-                    {id === currentTrack && (
-                      <Play className="w-3 h-3 mx-auto" />
-                    )}
+                    {id === track && <Play className="w-3 h-3 mx-auto" />}
                   </div>
                   <div className="flex-1 px-2 py-1 border-r border-gray-200 truncate">
                     {artist}
                   </div>
                   <div className="w-16 px-2 py-1 border-r border-gray-200 text-center">
-                    {track}
+                    {trackNo}
                   </div>
                   <div className="flex-1 px-2 py-1 border-r border-gray-200 truncate">
                     {name}
