@@ -34,6 +34,14 @@ CREATE TABLE "Music" (
     "cover" TEXT,
     "file" TEXT NOT NULL,
     "date" TEXT,
+    "codec" TEXT,
+    "bitrate" INTEGER,
+    "bitsPerSample" INTEGER,
+    "sampleRate" INTEGER,
+    "duration" INTEGER,
+    "lossless" BOOLEAN,
+    "numberOfChannels" INTEGER,
+    "size" INTEGER,
     CONSTRAINT "Music_albumId_fkey" FOREIGN KEY ("albumId") REFERENCES "Album" ("id") ON DELETE SET NULL ON UPDATE CASCADE,
     CONSTRAINT "Music_artistId_fkey" FOREIGN KEY ("artistId") REFERENCES "Artist" ("id") ON DELETE SET NULL ON UPDATE CASCADE
 );

@@ -15,6 +15,14 @@ export type Music = {
   genre: string[];
   cover: string;
   file: string;
+  codec?: string;
+  bitrate?: number;
+  bitsPerSample?: number;
+  sampleRate?: number;
+  duration?: number;
+  lossless?: boolean;
+  numberOfChannels?: number;
+  size: number;
 };
 
 export type Artist = {

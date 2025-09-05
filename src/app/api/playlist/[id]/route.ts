@@ -15,7 +15,9 @@ export async function PUT(
 ) {
   const ob$ = forkJoin({
     id: from(ctx.params).pipe(map(({ id }) => Number(id))),
-    body: from(req.json() as Promise<CreatePlayListRequest>),
+    body: from<Promise<CreatePlayListRequest>>(
+      req.json() as Promise<CreatePlayListRequest>,
+    ),
   }).pipe(
     switchMap(({ id, body: { name, music } }) =>
       from(
@@ -28,47 +30,31 @@ export async function PUT(
             () => record !== null,
             defer(() =>
               from(
-                prisma.playlistMusic.findMany({
+                prisma.playlistMusic.deleteMany({
                   where: { playlistId: id },
                 }),
               ).pipe(
-                map((records) => {
-                  const musicList = records.map(({ musicId }) => musicId);
-
-                  return {
-                    add: music.filter((m) => !musicList.includes(m)),
-                    remove: musicList.filter((m) => !music.includes(m)),
-                  };
-                }),
-                switchMap(({ add, remove }) =>
-                  forkJoin([
-                    ...add.map((musicId) =>
+                switchMap(() =>
+                  forkJoin(
+                    music.map((m) =>
                       from(
                         prisma.playlistMusic.create({
                           data: {
                             playlistId: id,
-                            musicId,
+                            musicId: m,
                           },
                         }),
                       ),
                     ),
-                    ...remove.map((musicId) =>
-                      from(
-                        prisma.playlistMusic.deleteMany({
-                          where: {
-                            playlistId: id,
-                            musicId,
-                          },
-                        }),
-                      ),
-                    ),
-                    from(
-                      prisma.playlist.update({
-                        where: { id },
-                        data: { name },
-                      }),
-                    ),
-                  ]),
+                  ),
+                ),
+                switchMap(() =>
+                  from(
+                    prisma.playlist.update({
+                      where: { id },
+                      data: { name },
+                    }),
+                  ),
                 ),
                 map(() => true),
               ),

@@ -68,6 +68,7 @@ export async function POST(req: Request) {
                 // const safeName = `${Date.now()}_${path.basename(file.name)}`;
                 const fileName = path.basename(file.name);
                 const filePath = path.join(musics, fileName);
+                const size = file.size;
 
                 const hash = crypto
                   .createHash('sha256')
@@ -81,7 +82,7 @@ export async function POST(req: Request) {
                     // originalName: file.name,
                     hash,
                     fileName,
-                    size: buffer.length,
+                    size,
                     url: `/uploads/${fileName}`,
                   })),
                 );
@@ -94,11 +95,20 @@ export async function POST(req: Request) {
     switchMap((files) =>
       forkJoin(
         files.map((file) => {
-          const { buffer, hash } = file;
+          const { buffer, hash, size } = file;
 
           return from(parseBuffer(buffer!)).pipe(
             map((meta) => {
-              const { common } = meta;
+              const { common, format } = meta;
+              const {
+                codec,
+                lossless,
+                numberOfChannels,
+                bitsPerSample,
+                sampleRate,
+                duration,
+                bitrate,
+              } = format;
 
               const name = common.title ?? path.parse(file.fileName).name;
               // const artists = common.artists ?? common.artist?.split(',') ?? [];
@@ -124,6 +134,14 @@ export async function POST(req: Request) {
                 disk,
                 track,
                 tracks,
+                codec,
+                lossless,
+                numberOfChannels,
+                bitsPerSample,
+                sampleRate,
+                duration,
+                bitrate,
+                size,
               };
             }),
             switchMap(
@@ -139,6 +157,7 @@ export async function POST(req: Request) {
                 disk,
                 track,
                 tracks,
+                ...rest
               }) => {
                 return iif(
                   () => picture !== undefined,
@@ -195,6 +214,7 @@ export async function POST(req: Request) {
                               albumId: album.id,
                               artistId: artist.id,
                               file: file.fileName,
+                              ...rest,
                             },
                             create: {
                               hash,
@@ -207,6 +227,7 @@ export async function POST(req: Request) {
                               albumId: album.id,
                               artistId: artist.id,
                               file: file.fileName,
+                              ...rest,
                             },
                           }),
                         ).pipe(

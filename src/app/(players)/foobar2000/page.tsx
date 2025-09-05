@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useImmer } from 'use-immer';
 import { useTranslations } from 'next-intl';
 import {
@@ -45,19 +45,30 @@ export default function Foobar2000Player() {
   const [state, setState] = useImmer<{
     expandedKeys: number[];
     currentPlaylist: number;
+    currentTrack?: number;
   }>({
     expandedKeys: [0],
-    currentPlaylist: 0,
+    currentPlaylist: -1,
+    currentTrack: undefined,
   });
 
-  const { expandedKeys, currentPlaylist } = state;
+  const { expandedKeys, currentPlaylist, currentTrack } = state;
 
   const { data: artists = [] } = useArtistsQuery();
   const { data: music = [] } = useMusicQuery();
-  const { data: _playlists = [] } = usePlaylistsQuery();
+  const { data: _playlists = [], refetch: refetchPlaylists } =
+    usePlaylistsQuery();
   const { mutate: createPlaylistMutate, isPending } =
-    useAddToDefaultPlaylistMutation();
-  const { mutate: updatePlaylistMutate } = useUpdatePlaylistMutation();
+    useAddToDefaultPlaylistMutation({
+      onSuccess: async () => {
+        await refetchPlaylists();
+      },
+    });
+  const { mutate: updatePlaylistMutate } = useUpdatePlaylistMutation({
+    onSuccess: async () => {
+      await refetchPlaylists();
+    },
+  });
 
   const tree = useMemo<LibraryItem[]>(
     () =>
@@ -86,13 +97,11 @@ export default function Foobar2000Player() {
   );
 
   const playlist = useMemo(
-    () => playlists?.[currentPlaylist],
+    () => playlists.find(({ id }) => id === currentPlaylist),
     [playlists, currentPlaylist],
   );
 
   const [isPlaying, setIsPlaying] = useState(false);
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [_, setCurrentTrack] = useState(0);
 
   const addToPlaylist = useCallback(
     (id: number) => {
@@ -101,11 +110,7 @@ export default function Foobar2000Player() {
           name: 'Default Playlist',
           music: [id],
         });
-
-        return;
-      }
-
-      if (playlist && !isPending) {
+      } else if (playlist && !isPending) {
         updatePlaylistMutate({
           id: playlist.id,
           params: {
@@ -165,6 +170,14 @@ export default function Foobar2000Player() {
       )),
     [expandedKeys, setState, addToPlaylist],
   );
+
+  useEffect(() => {
+    if (currentPlaylist === -1 && playlists.length > 0) {
+      setState((draft) => {
+        draft.currentPlaylist = playlists[0].id;
+      });
+    }
+  }, [playlists, currentPlaylist, setState]);
 
   return (
     <div className="h-screen bg-gray-200 flex flex-col font-sans text-sm">
@@ -284,39 +297,45 @@ export default function Foobar2000Player() {
 
           {/* Playlist Items */}
           <div className="flex-1 overflow-y-auto">
-            {(playlist?.music ?? []).map(({ id, name, artist, file }) => (
-              <div
-                key={id}
-                className={`flex text-xs border-b border-gray-200 hover:bg-blue-50 cursor-pointer ${
-                  /* track.playing */ false ? 'bg-blue-100' : ''
-                }`}
-                onClick={() => setCurrentTrack(id)}
-                onDoubleClick={() => {
-                  if (audio.current) {
-                    audio.current.src = `/api/upload?file=${file}`;
-                    audio.current.play();
+            {(playlist?.music ?? []).map(
+              ({ id, name, artist, file, duration, track }) => (
+                <div
+                  key={id}
+                  className={`flex text-xs border-b border-gray-200 hover:bg-blue-50 cursor-pointer ${
+                    id === currentTrack ? 'bg-blue-100' : ''
+                  }`}
+                  onClick={() => {
+                    setState((draft) => {
+                      draft.currentTrack = id;
+                    });
+                  }}
+                  onDoubleClick={() => {
+                    if (audio.current) {
+                      audio.current.src = `/api/upload?file=${file}`;
+                      audio.current.play();
 
-                    setIsPlaying(true);
-                  }
-                }}
-              >
-                {/*<div className="w-8 px-2 py-1 border-r border-gray-200 text-center">*/}
-                {/*  {track.playing && <Play className="w-3 h-3 mx-auto" />}*/}
-                {/*</div>*/}
-                <div className="flex-1 px-2 py-1 border-r border-gray-200 truncate">
-                  {artist}
+                      setIsPlaying(true);
+                    }
+                  }}
+                >
+                  <div className="w-8 px-2 py-1 border-r border-gray-200 text-center">
+                    {id === currentTrack && (
+                      <Play className="w-3 h-3 mx-auto" />
+                    )}
+                  </div>
+                  <div className="flex-1 px-2 py-1 border-r border-gray-200 truncate">
+                    {artist}
+                  </div>
+                  <div className="w-16 px-2 py-1 border-r border-gray-200 text-center">
+                    {track}
+                  </div>
+                  <div className="flex-1 px-2 py-1 border-r border-gray-200 truncate">
+                    {name}
+                  </div>
+                  <div className="w-16 px-2 py-1 text-center">{duration}</div>
                 </div>
-                <div className="w-16 px-2 py-1 border-r border-gray-200 text-center">
-                  1.03
-                </div>
-                <div className="flex-1 px-2 py-1 border-r border-gray-200 truncate">
-                  {name}
-                </div>
-                {/*<div className="w-16 px-2 py-1 text-center">*/}
-                {/*  {track.duration}*/}
-                {/*</div>*/}
-              </div>
-            ))}
+              ),
+            )}
           </div>
         </div>
       </div>

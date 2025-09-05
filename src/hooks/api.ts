@@ -38,7 +38,9 @@ export const fetchArtists$ = () => fetch$<Artist[]>('/artists');
 
 export const fetchPlaylists$ = () => fetch$<Playlist[]>('/playlists');
 
-export const addToDefaultPlaylist$ = (params: CreatePlayListRequest) =>
+export const addToDefaultPlaylist$ = (
+  params: CreatePlayListRequest,
+): Observable<Playlist> =>
   fetch$('/playlist', {
     method: 'POST',
     body: JSON.stringify(params),
