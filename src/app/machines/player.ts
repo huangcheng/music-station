@@ -7,6 +7,7 @@ type PlayerContext = {
   track?: number;
   volume?: number;
   src?: string;
+  originalVolume?: number;
 };
 
 type PlayerEvents =
@@ -14,7 +15,10 @@ type PlayerEvents =
   | { type: 'PAUSE' }
   | { type: 'STOP' }
   | { type: 'SET_VOLUME'; volume: number }
-  | { type: 'TOGGLE_PLAY' };
+  | { type: 'TOGGLE_PLAY' }
+  | { type: 'MUTE' }
+  | { type: 'UNMUTE' }
+  | { type: 'TOGGLE_MUTE' };
 
 type PlayerInput = {
   src?: string;
@@ -28,6 +32,17 @@ export const playerMachine = setup({
     } as PlayerContext,
     events: {} as PlayerEvents,
     input: {} as PlayerInput,
+  },
+  actions: {
+    toggleMute: assign(({ context }) => {
+      return context.volume === 0
+        ? {
+            volume: context.originalVolume ?? 100,
+          }
+        : {
+            volume: 0,
+          };
+    }),
   },
 }).createMachine({
   id: 'player',
@@ -49,14 +64,32 @@ export const playerMachine = setup({
           }),
         },
         SET_VOLUME: {
+          actions: assign(({ event: { volume } }) => ({
+            volume: volume,
+            originalVolume: volume,
+          })),
+        },
+        MUTE: {
           actions: assign({
-            volume: ({ event }) => event.volume,
+            volume: 0,
           }),
+        },
+        TOGGLE_MUTE: {
+          actions: [
+            {
+              type: 'toggleMute',
+            },
+          ],
+        },
+        UNMUTE: {
+          actions: assign(({ context }) => ({
+            volume: context.originalVolume ?? 100,
+          })),
         },
         TOGGLE_PLAY: {
           target: 'playing',
           actions: assign({
-            status: () => 'playing',
+            status: 'playing',
           }),
         },
       },
@@ -66,30 +99,38 @@ export const playerMachine = setup({
         PLAY: {
           actions: assign({
             src: ({ event }) => event.src,
-            status: () => 'playing',
+            status: 'playing',
           }),
         },
         PAUSE: {
           target: 'paused',
           actions: assign({
-            status: () => 'paused',
+            status: 'paused',
           }),
         },
         STOP: {
           target: 'stopped',
           actions: assign({
-            status: () => 'stopped',
+            status: 'stopped',
           }),
         },
         SET_VOLUME: {
-          actions: assign({
-            volume: ({ event }) => event.volume,
-          }),
+          actions: assign(({ event: { volume } }) => ({
+            volume: volume,
+            originalVolume: volume,
+          })),
+        },
+        TOGGLE_MUTE: {
+          actions: [
+            {
+              type: 'toggleMute',
+            },
+          ],
         },
         TOGGLE_PLAY: {
           target: 'paused',
           actions: assign({
-            status: () => 'paused',
+            status: 'paused',
           }),
         },
       },
@@ -99,24 +140,32 @@ export const playerMachine = setup({
         PLAY: {
           target: 'playing',
           actions: assign({
-            status: () => 'playing',
+            status: 'playing',
           }),
         },
         STOP: {
           target: 'stopped',
           actions: assign({
-            status: () => 'stopped',
+            status: 'stopped',
           }),
         },
         SET_VOLUME: {
-          actions: assign({
-            volume: ({ event }) => event.volume,
-          }),
+          actions: assign(({ event: { volume } }) => ({
+            volume: volume,
+            originalVolume: volume,
+          })),
+        },
+        TOGGLE_MUTE: {
+          actions: [
+            {
+              type: 'toggleMute',
+            },
+          ],
         },
         TOGGLE_PLAY: {
           target: 'playing',
           actions: assign({
-            status: () => 'playing',
+            status: 'playing',
           }),
         },
       },

@@ -11,6 +11,7 @@ import {
   SkipBack,
   SkipForward,
   Volume2,
+  VolumeX,
   ChevronRight,
   ChevronDown,
   Music,
@@ -334,8 +335,13 @@ export default function Foobar2000Player() {
           variant="ghost"
           size="sm"
           className="h-6 w-6 p-0 hover:bg-gray-200"
+          onClick={() => send({ type: 'TOGGLE_MUTE' })}
         >
-          <Volume2 className="w-3 h-3" />
+          {volume === 0 ? (
+            <VolumeX className="w-3 h-3" />
+          ) : (
+            <Volume2 className="w-3 h-3" />
+          )}
         </Button>
         <div className="flex-1" />
         <div className="text-xs text-gray-600">Default Playlist</div>
