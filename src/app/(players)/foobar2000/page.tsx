@@ -107,6 +107,11 @@ export default function Foobar2000Player() {
     [playlists, currentPlaylist],
   );
 
+  const nowPlaying = useMemo(
+    () => music.find(({ id }) => id === track),
+    [music, track],
+  );
+
   const addToPlaylist = useCallback(
     (id: number) => {
       if (!playlist && !isPending) {
@@ -205,6 +210,7 @@ export default function Foobar2000Player() {
         case 'paused':
         case 'stopped': {
           audio.current.pause();
+          break;
         }
         default: {
           break;
@@ -449,7 +455,12 @@ export default function Foobar2000Player() {
 
         {/* Status Bar */}
         <div className="px-2 py-1 text-xs text-gray-700 flex items-center space-x-4">
-          <span>FLAC | 44100 kbps | 192000 Hz | stereo | 0:10 / 3:59</span>
+          <span>
+            {nowPlaying?.codec} | {(nowPlaying?.bitrate ?? 0) / 1000} kbps |{' '}
+            {nowPlaying?.sampleRate ?? 0} Hz |{' '}
+            {(nowPlaying?.numberOfChannels ?? 0) === 2 ? 'stereo' : 'mono'} |
+            0:10 / 3:59
+          </span>
         </div>
       </div>
     </div>

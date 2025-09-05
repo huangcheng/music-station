@@ -2,7 +2,7 @@
   "*.{ts,tsx}": [
     "prettier --write",
     "eslint --fix",
-    "cspell --no-progress",
+    "cspell --no-progress --no-must-find-files",
     "eslint"
   ],
   "*.prisma": [
