@@ -1,6 +1,7 @@
 import { from } from 'rxjs';
 import { fromFetch } from 'rxjs/fetch';
 import { map } from 'rxjs/operators';
+import { isServer } from '@tanstack/react-query';
 import { omit } from 'es-toolkit';
 
 import type { Observable } from 'rxjs';
@@ -14,7 +15,7 @@ import type {
 } from '@/types';
 
 export const fetch$ = <R>(url: string, init?: RequestInit): Observable<R> =>
-  fromFetch(`/api${url}`, {
+  fromFetch(`${isServer ? process.env.__NEXT_PRIVATE_ORIGIN : ''}/api${url}`, {
     headers: {
       'Content-Type': 'application/json',
       Accept: 'application/json',

@@ -1,5 +1,5 @@
 import { lastValueFrom } from 'rxjs';
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useSuspenseQuery } from '@tanstack/react-query';
 
 import type { UseMutationOptions } from '@tanstack/react-query';
 
@@ -14,7 +14,7 @@ import {
 } from './api';
 
 export const useMusicQuery = () =>
-  useQuery({
+  useSuspenseQuery({
     queryKey: ['music'],
     queryFn: async () => await lastValueFrom(fetchMusic$()),
   });
