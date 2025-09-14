@@ -1,11 +1,21 @@
-import { useTranslations } from 'next-intl';
+import { useCallback } from 'react';
+import { lastValueFrom } from 'rxjs';
+
+import { ServerComponentProvider } from '@/providers';
+import { fetchMusic$ } from '@/hooks';
+import { Tracks } from '@/components';
 
 export default function Home() {
-  const t = useTranslations('upload');
+  const fetchMusic = useCallback(
+    async () => await lastValueFrom(fetchMusic$()),
+    [],
+  );
 
   return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <h1>{t('title')}</h1>
+    <div className="bg-background rounded-2xl w-screen h-screen overflow-hidden">
+      <ServerComponentProvider queryFn={fetchMusic} queryKey={['music']}>
+        <Tracks />
+      </ServerComponentProvider>
     </div>
   );
 }

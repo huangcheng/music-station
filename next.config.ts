@@ -9,15 +9,6 @@ const nextConfig: NextConfig = {
       bodySizeLimit: '200mb',
     },
   },
-  async redirects() {
-    return [
-      {
-        source: '/',
-        destination: '/foobar2000',
-        permanent: true,
-      },
-    ];
-  },
 };
 
 const withNextIntl = createNextIntlPlugin();

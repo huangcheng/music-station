@@ -181,17 +181,20 @@ export async function POST(req: Request) {
                           create: { name: artist },
                         }),
                       ),
-                      genre: forkJoin(
-                        genre.map((name) =>
-                          from(
-                            prisma.genre.upsert({
-                              where: { name },
-                              update: {},
-                              create: { name },
-                            }),
-                          ),
-                        ),
-                      ),
+                      genre:
+                        genre.length > 0
+                          ? forkJoin(
+                              genre.map((name) =>
+                                from(
+                                  prisma.genre.upsert({
+                                    where: { name },
+                                    update: {},
+                                    create: { name },
+                                  }),
+                                ),
+                              ),
+                            )
+                          : of([]),
                       album: from(
                         prisma.album.upsert({
                           where: { name: album },
@@ -233,22 +236,26 @@ export async function POST(req: Request) {
                         ).pipe(
                           switchMap((record) =>
                             forkJoin([
-                              forkJoin(
-                                genre.map((g) =>
-                                  from(
-                                    prisma.musicGenre.create({
-                                      data: {
-                                        genre: {
-                                          connect: { id: g.id },
-                                        },
-                                        music: {
-                                          connect: { id: record.id },
-                                        },
-                                      },
-                                    }),
-                                  ).pipe(catchError(() => of(null))),
-                                ),
-                              ),
+                              ...(genre.length > 0
+                                ? [
+                                    forkJoin(
+                                      genre.map((g) =>
+                                        from(
+                                          prisma.musicGenre.create({
+                                            data: {
+                                              genre: {
+                                                connect: { id: g.id },
+                                              },
+                                              music: {
+                                                connect: { id: record.id },
+                                              },
+                                            },
+                                          }),
+                                        ).pipe(catchError(() => of(null))),
+                                      ),
+                                    ),
+                                  ]
+                                : []),
                               from(
                                 prisma.album.update({
                                   where: { id: album.id },
