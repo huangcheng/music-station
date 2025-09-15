@@ -7,5 +7,5 @@ import { useMusicQuery } from '@/hooks';
 export default function Tracks(): ReactElement {
   const { data: tracks } = useMusicQuery();
 
-  return <div>{JSON.stringify(tracks)}</div>;
+  return <div className="h-full overflow-y-auto">{JSON.stringify(tracks)}</div>;
 }

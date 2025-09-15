@@ -3,7 +3,7 @@ import { NextIntlClientProvider } from 'next-intl';
 import type { ReactNode } from 'react';
 import type { Metadata } from 'next';
 
-import { QueryProvider } from '@/providers';
+import { QueryProvider, GlobalStoreProvider } from '@/providers';
 
 import './globals.css';
 
@@ -21,7 +21,9 @@ export default async function RootLayout({
     <html lang="en">
       <body className="antialiased">
         <NextIntlClientProvider>
-          <QueryProvider>{children}</QueryProvider>
+          <QueryProvider>
+            <GlobalStoreProvider>{children}</GlobalStoreProvider>
+          </QueryProvider>
         </NextIntlClientProvider>
       </body>
     </html>
