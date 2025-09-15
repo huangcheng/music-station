@@ -1,36 +1,43 @@
 import { setup, assign } from 'xstate';
 
-type PlayerStatus = 'playing' | 'paused' | 'stopped';
+import type { Music } from '@/types';
+
+// type PlayerStatus = 'playing' | 'paused' | 'stopped';
+
+type LoopMode = 'none' | 'one' | 'all' | 'shuffle';
 
 type PlayerContext = {
   id?: number;
-  status: PlayerStatus;
-  track?: number;
+  tracks: Music[];
+  track?: Music;
   volume?: number;
-  src?: string;
   originalVolume?: number;
+  loop?: LoopMode;
 };
 
 type PlayerEvents =
-  | { type: 'PLAY'; src: string; id: number }
+  | { type: 'PLAY' }
   | { type: 'PAUSE' }
   | { type: 'STOP' }
   | { type: 'SET_VOLUME'; volume: number }
+  | { type: 'PLAY_NEXT' }
+  | { type: 'PLAY_PREV' }
+  | { type: 'SET_TRACK'; id: number }
+  | { type: 'SET_TRACKS'; tracks: Music[] }
   | { type: 'TOGGLE_PLAY' }
   | { type: 'MUTE' }
   | { type: 'UNMUTE' }
   | { type: 'TOGGLE_MUTE' };
 
 type PlayerInput = {
-  src?: string;
   volume?: number;
+  loop?: LoopMode;
+  tracks: Music[];
 };
 
 export const playerMachine = setup({
   types: {
-    context: {
-      status: 'stopped' as PlayerStatus,
-    } as PlayerContext,
+    context: {} as PlayerContext,
     events: {} as PlayerEvents,
     input: {} as PlayerInput,
   },
@@ -44,30 +51,99 @@ export const playerMachine = setup({
             volume: 0,
           };
     }),
+    getNextTrack: assign(({ context }: { context: PlayerContext }) => {
+      const { loop, tracks } = context;
+      if (!tracks || tracks.length === 0) {
+        return {};
+      }
+
+      const currentIndex = tracks.findIndex((t) => t.id === context.track?.id);
+
+      if (!loop && currentIndex === tracks.length - 1) {
+        return {};
+      }
+
+      let nextIndex = currentIndex;
+
+      switch (loop) {
+        case 'one': {
+          nextIndex = currentIndex;
+          break;
+        }
+        case 'all': {
+          nextIndex = (currentIndex + 1) % tracks.length;
+          break;
+        }
+        case 'shuffle': {
+          nextIndex = Math.floor(Math.random() * tracks.length);
+          break;
+        }
+      }
+
+      return {
+        track: tracks[nextIndex],
+        id: tracks[nextIndex].id,
+      };
+    }),
+    getPrevTrack: assign(({ context }: { context: PlayerContext }) => {
+      const { loop, tracks } = context;
+
+      if (!tracks || tracks.length === 0) {
+        return {};
+      }
+
+      const currentIndex = tracks?.findIndex((t) => t.id === context.track?.id);
+
+      if (!loop && currentIndex === 0) {
+        return {};
+      }
+
+      let prevIndex = currentIndex;
+      switch (loop) {
+        case 'one': {
+          prevIndex = currentIndex;
+          break;
+        }
+        case 'all': {
+          prevIndex = (currentIndex - 1 + tracks.length) % tracks.length;
+          break;
+        }
+        case 'shuffle': {
+          prevIndex = Math.floor(Math.random() * tracks.length);
+          break;
+        }
+      }
+
+      return {
+        track: tracks[prevIndex],
+        id: tracks[prevIndex].id,
+      };
+    }),
   },
 }).createMachine({
   id: 'player',
   initial: 'stopped',
-  context: ({ input: { src, volume } }) => ({
+  context: ({ input: { volume, tracks, loop } }) => ({
     status: 'stopped',
-    src: src ?? '',
     volume: volume ?? 100,
+    loop: loop ?? 'all',
+    tracks,
   }),
   states: {
     stopped: {
       on: {
         PLAY: {
           target: 'playing',
-          actions: assign(({ event: { id, src } }) => ({
-            status: 'playing',
-            src,
-            id,
-          })),
         },
         SET_VOLUME: {
           actions: assign(({ event: { volume } }) => ({
             volume: volume,
             originalVolume: volume,
+          })),
+        },
+        SET_TRACKS: {
+          actions: assign(({ event: { tracks } }) => ({
+            tracks,
           })),
         },
         MUTE: {
@@ -89,9 +165,28 @@ export const playerMachine = setup({
         },
         TOGGLE_PLAY: {
           target: 'playing',
-          actions: assign({
-            status: 'playing',
-          }),
+        },
+        PLAY_NEXT: {
+          target: 'playing',
+          actions: [
+            {
+              type: 'getNextTrack',
+            },
+          ],
+        },
+        PLAY_PREV: {
+          target: 'playing',
+          actions: [
+            {
+              type: 'getPrevTrack',
+            },
+          ],
+        },
+        SET_TRACK: {
+          actions: assign(({ event: { id }, context: { tracks } }) => ({
+            id,
+            track: tracks.find((t) => t.id === id),
+          })),
         },
       },
     },
@@ -99,28 +194,22 @@ export const playerMachine = setup({
       on: {
         PLAY: {
           target: 'playing',
-          actions: assign(({ event: { id, src } }) => ({
-            status: 'playing',
-            src,
-            id,
-          })),
         },
         PAUSE: {
           target: 'paused',
-          actions: assign({
-            status: 'paused',
-          }),
         },
         STOP: {
           target: 'stopped',
-          actions: assign({
-            status: 'stopped',
-          }),
         },
         SET_VOLUME: {
           actions: assign(({ event: { volume } }) => ({
             volume: volume,
             originalVolume: volume,
+          })),
+        },
+        SET_TRACKS: {
+          actions: assign(({ event: { tracks } }) => ({
+            tracks,
           })),
         },
         TOGGLE_MUTE: {
@@ -132,9 +221,28 @@ export const playerMachine = setup({
         },
         TOGGLE_PLAY: {
           target: 'paused',
-          actions: assign({
-            status: 'paused',
-          }),
+        },
+        PLAY_NEXT: {
+          target: 'playing',
+          actions: [
+            {
+              type: 'getNextTrack',
+            },
+          ],
+        },
+        PLAY_PREV: {
+          target: 'playing',
+          actions: [
+            {
+              type: 'getPrevTrack',
+            },
+          ],
+        },
+        SET_TRACK: {
+          actions: assign(({ event: { id }, context: { tracks } }) => ({
+            id,
+            track: tracks.find((t) => t.id === id),
+          })),
         },
       },
     },
@@ -142,20 +250,19 @@ export const playerMachine = setup({
       on: {
         PLAY: {
           target: 'playing',
-          actions: assign({
-            status: 'playing',
-          }),
         },
         STOP: {
           target: 'stopped',
-          actions: assign({
-            status: 'stopped',
-          }),
         },
         SET_VOLUME: {
           actions: assign(({ event: { volume } }) => ({
             volume: volume,
             originalVolume: volume,
+          })),
+        },
+        SET_TRACKS: {
+          actions: assign(({ event: { tracks } }) => ({
+            tracks,
           })),
         },
         TOGGLE_MUTE: {
@@ -167,9 +274,28 @@ export const playerMachine = setup({
         },
         TOGGLE_PLAY: {
           target: 'playing',
-          actions: assign({
-            status: 'playing',
-          }),
+        },
+        PLAY_NEXT: {
+          target: 'playing',
+          actions: [
+            {
+              type: 'getNextTrack',
+            },
+          ],
+        },
+        PLAY_PREV: {
+          target: 'playing',
+          actions: [
+            {
+              type: 'getPrevTrack',
+            },
+          ],
+        },
+        SET_TRACK: {
+          actions: assign(({ event: { id }, context: { tracks } }) => ({
+            id,
+            track: tracks.find((t) => t.id === id),
+          })),
         },
       },
     },

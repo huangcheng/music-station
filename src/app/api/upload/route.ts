@@ -330,10 +330,14 @@ export async function GET(request: NextRequest) {
                 new NextResponse(buffer as BodyInit, {
                   status: 200,
                   headers: {
+                    ETag: `"${stat.size.toString(16)}-${stat.mtimeMs.toString(16)}"`,
                     'Content-Type': isMusic
                       ? musicExtend(file!).mimeType
                       : `image/${path.extname(filePath).slice(1)}`,
                     'Content-Length': stat.size.toString(),
+                    'Last-Modified': stat.mtime.toUTCString(),
+                    'Accept-Ranges': 'bytes',
+                    // 'Content-Disposition': `inline; filename="${path.basename(file!)}"`,
                     'Cache-Control': 'public, max-age=31536000, immutable',
                   },
                 }),

@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useRef, useEffect, useMemo } from 'react';
+import { useCallback, useRef, useEffect } from 'react';
 import Image from 'next/image';
 import { useImmer } from 'use-immer';
 import { fromEvent } from 'rxjs';
@@ -44,7 +44,9 @@ export default function Home(): ReactElement {
   );
 
   const [snapshot, send] = useMachine(playerMachine, {
-    input: {},
+    input: {
+      tracks,
+    },
   });
 
   const [state, setState] = useImmer<State>({
@@ -57,10 +59,7 @@ export default function Home(): ReactElement {
 
   const { context } = snapshot;
 
-  const track = useMemo(
-    () => (tracks ?? []).find(({ id }) => id === context.id),
-    [tracks, context],
-  );
+  const { track } = context;
 
   const setNav = useCallback(
     (nav: State['nav']) => {
@@ -78,7 +77,7 @@ export default function Home(): ReactElement {
     [scope],
   );
 
-  const ob$ = useObservable(
+  const resize$ = useObservable(
     (inputs$) =>
       inputs$.pipe(
         switchMap(([ref, setState]) =>
@@ -95,7 +94,29 @@ export default function Home(): ReactElement {
     [ref, setState],
   );
 
-  useSubscription(ob$);
+  useSubscription(resize$);
+
+  const playback$ = useObservable(
+    (inputs$) =>
+      inputs$.pipe(
+        switchMap(([audio, context, send]) =>
+          fromEvent(audio.current!, 'ended').pipe(
+            tap(() => {
+              const { loop } = context;
+
+              send({ type: 'STOP' });
+
+              if (loop !== 'none') {
+                send({ type: 'PLAY_NEXT' });
+              }
+            }),
+          ),
+        ),
+      ),
+    [audio, context, send],
+  );
+
+  useSubscription(playback$);
 
   useEffect(() => {
     if (ref.current) {
@@ -132,18 +153,27 @@ export default function Home(): ReactElement {
   }, [audio, context]);
 
   useEffect(() => {
-    const { src } = context;
+    const { track } = context;
 
-    if (audio.current && src !== undefined) {
-      audio.current.src = src;
+    if (audio.current && track?.file !== undefined) {
+      audio.current.src = track.file;
     }
   }, [audio, context]);
 
+  useEffect(
+    () =>
+      send({
+        type: 'SET_TRACKS',
+        tracks: tracks ?? [],
+      }),
+    [tracks, send],
+  );
+
   useEffect(() => {
-    const { status } = context;
+    const { value } = snapshot;
 
     if (audio.current) {
-      switch (status) {
+      switch (value) {
         case 'playing': {
           void audio.current.play();
           break;
@@ -158,7 +188,7 @@ export default function Home(): ReactElement {
         }
       }
     }
-  }, [audio, context]);
+  }, [audio, snapshot]);
 
   return (
     <div
@@ -258,17 +288,14 @@ export default function Home(): ReactElement {
               <Tracks
                 style={{ height: canvasHeight }}
                 onClick={(id) => {
-                  const track = (tracks ?? []).find((t) => t.id === id);
+                  send({
+                    type: 'SET_TRACK',
+                    id,
+                  });
 
-                  if (track) {
-                    const { file } = track;
-
-                    send({
-                      type: 'PLAY',
-                      src: file,
-                      id,
-                    });
-                  }
+                  send({
+                    type: 'PLAY',
+                  });
                 }}
               />
               <div
@@ -293,7 +320,7 @@ export default function Home(): ReactElement {
       </div>
       <div className="w-full h-32 pr-10 pl-4 bg-orange-50 flex flex-row items-center">
         <div className="w-14 mr-4">
-          <audio ref={audio} style={{ display: 'none' }} />
+          <audio ref={audio} controls />
         </div>
         <div className="flex-1">
           {track?.cover ? (
