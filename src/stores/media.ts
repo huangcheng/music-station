@@ -6,27 +6,27 @@ import { fetchArtists$, fetchMusic$ } from '@/hooks';
 import type { Artist, Music } from '@/types';
 
 interface MediaState {
-  music: Music[];
+  tracks: Music[];
   artists: Artist[];
 }
 
 interface MediaActions {
   fetchMusic: () => Promise<Music[]>;
   fetchArtists: () => Promise<Artist[]>;
-  fetch: () => Promise<{ music: Music[]; artists: Artist[] }>;
+  fetch: () => Promise<{ tracks: Music[]; artists: Artist[] }>;
 }
 
 export type MusicStore = MediaState & MediaActions;
 
 export const useMediaStore = create<MusicStore>((set) => ({
-  music: [],
+  tracks: [],
   artists: [],
   fetchMusic: async () => {
-    const music = await lastValueFrom(fetchMusic$());
+    const tracks = await lastValueFrom(fetchMusic$());
 
-    set({ music });
+    set({ tracks });
 
-    return music;
+    return tracks;
   },
   fetchArtists: async () => {
     const artists = await lastValueFrom(fetchArtists$());
@@ -37,14 +37,14 @@ export const useMediaStore = create<MusicStore>((set) => ({
   },
   fetch: async () => {
     const ob$ = forkJoin({
-      music: fetchMusic$(),
+      tracks: fetchMusic$(),
       artists: fetchArtists$(),
     });
 
-    const { music, artists } = await lastValueFrom(ob$);
+    const { tracks, artists } = await lastValueFrom(ob$);
 
-    set({ music, artists });
+    set({ tracks, artists });
 
-    return { music, artists };
+    return { tracks, artists };
   },
 }));

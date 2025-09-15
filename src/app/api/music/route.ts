@@ -62,6 +62,15 @@ export async function GET() {
         of([]),
       ),
     ),
+    map((tracks) =>
+      tracks.map(({ file, cover, ...rest }) => ({
+        ...rest,
+        file: `/api/upload?file=${encodeURIComponent(file)}`,
+        cover: cover
+          ? `/api/upload?file=${encodeURIComponent(cover)}`
+          : undefined,
+      })),
+    ),
     map((music) => NextResponse.json({ data: music })),
     catchError(() => of(NextResponse.json({ data: [] }))),
   );

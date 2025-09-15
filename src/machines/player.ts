@@ -3,6 +3,7 @@ import { setup, assign } from 'xstate';
 type PlayerStatus = 'playing' | 'paused' | 'stopped';
 
 type PlayerContext = {
+  id?: number;
   status: PlayerStatus;
   track?: number;
   volume?: number;
@@ -11,7 +12,7 @@ type PlayerContext = {
 };
 
 type PlayerEvents =
-  | { type: 'PLAY'; src: string; track: number }
+  | { type: 'PLAY'; src: string; id: number }
   | { type: 'PAUSE' }
   | { type: 'STOP' }
   | { type: 'SET_VOLUME'; volume: number }
@@ -49,7 +50,7 @@ export const playerMachine = setup({
   initial: 'stopped',
   context: ({ input: { src, volume } }) => ({
     status: 'stopped',
-    src,
+    src: src ?? '',
     volume: volume ?? 100,
   }),
   states: {
@@ -57,11 +58,11 @@ export const playerMachine = setup({
       on: {
         PLAY: {
           target: 'playing',
-          actions: assign({
-            status: () => 'playing',
-            src: ({ event }) => event.src,
-            track: ({ event }) => event.track,
-          }),
+          actions: assign(({ event: { id, src } }) => ({
+            status: 'playing',
+            src,
+            id,
+          })),
         },
         SET_VOLUME: {
           actions: assign(({ event: { volume } }) => ({
@@ -97,10 +98,12 @@ export const playerMachine = setup({
     playing: {
       on: {
         PLAY: {
-          actions: assign({
-            src: ({ event }) => event.src,
+          target: 'playing',
+          actions: assign(({ event: { id, src } }) => ({
             status: 'playing',
-          }),
+            src,
+            id,
+          })),
         },
         PAUSE: {
           target: 'paused',

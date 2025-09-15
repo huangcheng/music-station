@@ -9,6 +9,6 @@
       "path": "dict/project.txt"
     }
   ],
-  "ignorePaths": ["node_modules/**"],
+  "ignorePaths": ["node_modules/**", "jest.config.ts"],
   "useGitignore": true
 }

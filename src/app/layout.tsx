@@ -9,7 +9,7 @@ import './globals.css';
 
 export const metadata: Metadata = {
   title: 'Music Station',
-  description: 'All-in-one music streaming web app',
+  description: 'All-in-one tracks streaming web app',
 };
 
 export default async function RootLayout({

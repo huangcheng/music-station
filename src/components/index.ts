@@ -1,5 +1,5 @@
 export * from './ui';
 
-export { default as Tracks } from './tracks';
+export { default as Track } from './track';
 
-export { default as Navigator } from './navigator';
+export type { TrackProps } from './track';

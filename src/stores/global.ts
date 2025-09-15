@@ -1,23 +1,21 @@
 import { createStore } from 'zustand/vanilla';
 
-type Nav = 'home' | 'albums' | 'playlists' | 'favorites' | 'settings';
-
 export type GlobalState = {
-  nav: Nav;
+  version: string;
 };
 
 export type GlobalActions = {
-  setNav: (nav: Nav) => void;
+  setVersion: (version: string) => void;
 };
 
 export type GlobalStore = GlobalState & GlobalActions;
 
 export const initGlobalStore = (): GlobalState => {
-  return { nav: 'home' };
+  return { version: '0.0.0' };
 };
 
 export const defaultInitState: GlobalState = {
-  nav: 'home',
+  version: '0.0.0',
 };
 
 export const createGlobalStore = (
@@ -25,6 +23,6 @@ export const createGlobalStore = (
 ) => {
   return createStore<GlobalStore>()((set) => ({
     ...initState,
-    setNav: (nav: Nav) => set(() => ({ nav })),
+    setVersion: (version: string) => set(() => ({ version })),
   }));
 };
