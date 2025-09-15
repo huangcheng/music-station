@@ -8,7 +8,7 @@ type LoopMode = 'none' | 'one' | 'all' | 'shuffle';
 
 type PlayerContext = {
   id?: number;
-  tracks: Music[];
+  tracks?: Music[];
   track?: Music;
   volume?: number;
   originalVolume?: number;
@@ -32,7 +32,7 @@ type PlayerEvents =
 type PlayerInput = {
   volume?: number;
   loop?: LoopMode;
-  tracks: Music[];
+  tracks?: Music[];
 };
 
 export const playerMachine = setup({
@@ -127,7 +127,7 @@ export const playerMachine = setup({
     status: 'stopped',
     volume: volume ?? 100,
     loop: loop ?? 'all',
-    tracks,
+    tracks: tracks ?? [],
   }),
   states: {
     stopped: {
@@ -185,7 +185,7 @@ export const playerMachine = setup({
         SET_TRACK: {
           actions: assign(({ event: { id }, context: { tracks } }) => ({
             id,
-            track: tracks.find((t) => t.id === id),
+            track: tracks?.find((t) => t.id === id),
           })),
         },
       },
@@ -241,7 +241,7 @@ export const playerMachine = setup({
         SET_TRACK: {
           actions: assign(({ event: { id }, context: { tracks } }) => ({
             id,
-            track: tracks.find((t) => t.id === id),
+            track: tracks?.find((t) => t.id === id),
           })),
         },
       },
@@ -294,7 +294,7 @@ export const playerMachine = setup({
         SET_TRACK: {
           actions: assign(({ event: { id }, context: { tracks } }) => ({
             id,
-            track: tracks.find((t) => t.id === id),
+            track: tracks?.find((t) => t.id === id),
           })),
         },
       },
