@@ -5,13 +5,11 @@ import { PrismaClient } from '@prisma/client';
 import { getTranslations } from 'next-intl/server';
 import { omit } from 'es-toolkit';
 
-const client = new PrismaClient();
+const prisma = new PrismaClient();
 
 export async function GET() {
-  'use server';
-
   const ob$ = from(
-    client.music.findMany({
+    prisma.music.findMany({
       include: {
         artist: true,
         album: true,
@@ -25,7 +23,7 @@ export async function GET() {
           forkJoin(
             music.map((m) =>
               from(
-                client.musicGenre.findMany({
+                prisma.musicGenre.findMany({
                   where: { musicId: m.id },
                   include: { genre: true },
                 }),

@@ -1,9 +1,13 @@
+import { useContext, useEffect } from 'react';
+import { useMachine } from '@xstate/react';
 import Image from 'next/image';
 import { HeartPulse, HeartCrack, EllipsisVertical } from 'lucide-react';
 
 import type { ReactElement, HTMLAttributes } from 'react';
 
 import { cn, convertToMS } from '@/lib';
+import { TracksContext } from '@/app/_components/tracks';
+import { favoriteMachine } from '@/machines';
 
 export interface TrackProps
   extends Omit<HTMLAttributes<HTMLDivElement>, 'title' | 'id' | 'onClick'> {
@@ -12,8 +16,7 @@ export interface TrackProps
   title?: string;
   artist?: string;
   duration?: number;
-  isFavorite?: boolean;
-  onClick?: (id: number) => void;
+  favorite?: boolean;
 }
 
 export default function Track({
@@ -22,11 +25,28 @@ export default function Track({
   title,
   artist,
   duration,
-  isFavorite,
+  favorite,
   className,
-  onClick,
   ...rest
 }: TrackProps): ReactElement {
+  const context = useContext(TracksContext);
+
+  const [snapshot, send] = useMachine(favoriteMachine, {
+    input: {
+      id,
+    },
+  });
+
+  const {
+    context: { favorite: isFavorite },
+  } = snapshot;
+
+  const { onClick } = context;
+
+  useEffect(() => {
+    send({ type: 'SYNC', favorite: favorite ?? false });
+  }, [favorite, send]);
+
   return (
     <div
       className={cn(
@@ -47,11 +67,19 @@ export default function Track({
       ) : (
         <div className="w-10 h-10 bg-gray-300 rounded-md" />
       )}
-      {isFavorite ? (
-        <HeartCrack size={20} color="#FF0000" />
-      ) : (
-        <HeartPulse size={20} color="#FF0000" />
-      )}
+      <button
+        onClick={(event) => {
+          send({ type: 'TOGGLE' });
+
+          event.stopPropagation();
+        }}
+      >
+        {isFavorite ? (
+          <HeartCrack size={20} color="#FF0000" />
+        ) : (
+          <HeartPulse size={20} color="#FF0000" />
+        )}
+      </button>
       <div className="flex-1 grid grid-cols-[2fr_8fr] items-center">
         <div className="flex flex-col items-center">
           <p className="text-base font-medium text-gray-900">{title}</p>

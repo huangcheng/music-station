@@ -59,3 +59,29 @@ export const toLibraryTree = (nodes: Node[]): LibraryItem[] =>
         : undefined,
     ...rest,
   }));
+
+export const calcSampleRate = (
+  bitrate: number,
+  depth: number,
+  channel: number,
+): string => {
+  const hertz = bitrate / channel / depth;
+
+  if (hertz === 0 || Number.isNaN(hertz) || !Number.isFinite(hertz)) {
+    return '0 Hz';
+  }
+
+  if (hertz >= 1000) {
+    return `${(hertz / 1000).toFixed(1)} kHz`;
+  }
+
+  return `${hertz.toFixed(1)} Hz`;
+};
+
+export const formatSampleRate = (sampleRate?: number): string =>
+  sampleRate
+    ? // eslint-disable-next-line unicorn/no-nested-ternary
+      sampleRate >= 1000
+      ? `${(sampleRate / 1000).toFixed(1)} kHz`
+      : `${sampleRate.toFixed(1)} Hz`
+    : 'Unknown';

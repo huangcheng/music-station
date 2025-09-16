@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useRef, useEffect } from 'react';
+import { useCallback, useRef, useEffect, useMemo } from 'react';
 import Image from 'next/image';
 import { useImmer } from 'use-immer';
 import { fromEvent } from 'rxjs';
@@ -15,16 +15,23 @@ import {
   Heart,
   ListMusic,
   Settings,
+  Shuffle,
+  Repeat,
+  Repeat1,
+  SkipBack,
+  SkipForward,
+  Play,
+  Pause,
 } from 'lucide-react';
 
 import type { ReactElement } from 'react';
 import type { Scope } from 'animejs';
 
-import { cn } from '@/lib';
+import { cn, formatSampleRate } from '@/lib';
 import { useMediaStore } from '@/stores';
 import { playerMachine } from '@/machines';
 
-import { Tracks } from './_components';
+import { Tracks, TracksProvider } from './_components';
 
 type State = {
   nav: 'home' | 'albums' | 'playlists' | 'favorites' | 'settings';
@@ -40,7 +47,10 @@ export default function Home(): ReactElement {
   const audio = useRef<HTMLAudioElement | null>(null);
 
   const { fetch, tracks } = useMediaStore(
-    useShallow(({ fetch, tracks }) => ({ fetch, tracks })),
+    useShallow(({ fetch, tracks }) => ({
+      fetch,
+      tracks,
+    })),
   );
 
   const [snapshot, send] = useMachine(playerMachine, {
@@ -59,7 +69,7 @@ export default function Home(): ReactElement {
 
   const { context } = snapshot;
 
-  const { track } = context;
+  const { track, loop } = context;
 
   const setNav = useCallback(
     (nav: State['nav']) => {
@@ -117,6 +127,46 @@ export default function Home(): ReactElement {
   );
 
   useSubscription(playback$);
+
+  const handleTrackClick = useCallback(
+    (id: number) => {
+      send({
+        type: 'SET_TRACK',
+        id,
+      });
+
+      send({
+        type: 'PLAY',
+      });
+    },
+    [send],
+  );
+
+  const handleRefresh = useCallback(() => {
+    void fetch();
+  }, [fetch]);
+
+  const tracksContext = useMemo(
+    () => ({ onClick: handleTrackClick, onRefresh: handleRefresh }),
+    [handleTrackClick, handleRefresh],
+  );
+
+  const LoopIcon = useCallback((): ReactElement => {
+    switch (loop) {
+      case 'one': {
+        return <Repeat1 size={20} />;
+      }
+      case 'all': {
+        return <Repeat size={20} />;
+      }
+      case 'shuffle': {
+        return <Shuffle size={20} />;
+      }
+      default: {
+        return <Repeat1 size={20} className="text-gray-400" />;
+      }
+    }
+  }, [loop]);
 
   useEffect(() => {
     if (ref.current) {
@@ -285,19 +335,9 @@ export default function Home(): ReactElement {
               ref={canvas}
               className="absolute top-0 left-0 right-0 bottom-0"
             >
-              <Tracks
-                style={{ height: canvasHeight }}
-                onClick={(id) => {
-                  send({
-                    type: 'SET_TRACK',
-                    id,
-                  });
-
-                  send({
-                    type: 'PLAY',
-                  });
-                }}
-              />
+              <TracksProvider value={tracksContext}>
+                <Tracks style={{ height: canvasHeight }} />
+              </TracksProvider>
               <div
                 className="w-full bg-amber-600"
                 style={{ height: canvasHeight }}
@@ -320,9 +360,9 @@ export default function Home(): ReactElement {
       </div>
       <div className="w-full h-32 pr-10 pl-4 bg-orange-50 flex flex-row items-center">
         <div className="w-14 mr-4">
-          <audio ref={audio} controls />
+          <audio ref={audio} />
         </div>
-        <div className="flex-1">
+        <div className="flex-1 flex flex-row items-center gap-x-4">
           {track?.cover ? (
             <Image
               src={track.cover}
@@ -334,6 +374,24 @@ export default function Home(): ReactElement {
           ) : (
             <div className="w-12 h-12 bg-gray-300 rounded-md" />
           )}
+          <div className="flex flex-col flex-1">
+            <div className="grid grid-cols-[2fr_6fr_2fr] items-center ">
+              <div>
+                <p className="text-base">
+                  {track?.name ?? ''}
+                  {track?.codec
+                    ? `(${track.codec}_${formatSampleRate(track?.sampleRate)})`
+                    : ''}
+                </p>
+                <p>{track?.artist ?? ''}</p>
+              </div>
+              <div className="">
+                <button className="w-6 h-6 flex flex-row items-center justify-center">
+                  <LoopIcon />
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>

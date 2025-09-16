@@ -12,6 +12,7 @@ import type {
   Artist,
   Playlist,
   CreatePlayListRequest,
+  UpdateMusicRequest,
 } from '@/types';
 
 export const fetch$ = <R>(url: string, init?: RequestInit): Observable<R> =>
@@ -49,6 +50,15 @@ export const addToDefaultPlaylist$ = (
 
 export const updatePlaylist$ = (id: number, params: CreatePlayListRequest) =>
   fetch$<Playlist>(`/playlist/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(params),
+  });
+
+export const updateMusic$ = (
+  id: number,
+  params: Partial<UpdateMusicRequest>,
+): Observable<Music> =>
+  fetch$<Music>(`/music/${id}`, {
     method: 'PUT',
     body: JSON.stringify(params),
   });

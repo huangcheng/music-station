@@ -39,8 +39,8 @@ model Artist {
 }
 
 model Music {
-  id               Int          @id @default(autoincrement())
-  hash             String       @unique
+  id               Int      @id @default(autoincrement())
+  hash             String   @unique
   name             String
   year             Int?
   artistId         Int?
@@ -58,8 +58,10 @@ model Music {
   lossless         Boolean?
   numberOfChannels Int?
   size             Int?
-  // relation entries to Artist via the join table
-  genre            MusicGenre[]
+  favorite         Boolean  @default(false)
+  playCount        Int      @default(0)
+
+  genre MusicGenre[]
 
   album     Album?          @relation(fields: [albumId], references: [id])
   artist    Artist?         @relation(fields: [artistId], references: [id])

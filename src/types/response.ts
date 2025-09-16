@@ -21,6 +21,8 @@ export type Music = {
   sampleRate?: number;
   duration?: number;
   lossless?: boolean;
+  favorite: boolean;
+  playCount: number;
   numberOfChannels?: number;
   size: number;
 };

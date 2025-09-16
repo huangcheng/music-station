@@ -35,7 +35,7 @@ type PlayerInput = {
   tracks?: Music[];
 };
 
-export const playerMachine = setup({
+const playerMachine = setup({
   types: {
     context: {} as PlayerContext,
     events: {} as PlayerEvents,
@@ -301,3 +301,5 @@ export const playerMachine = setup({
     },
   },
 });
+
+export default playerMachine;

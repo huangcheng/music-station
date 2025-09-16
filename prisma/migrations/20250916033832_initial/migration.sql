@@ -42,6 +42,8 @@ CREATE TABLE "Music" (
     "lossless" BOOLEAN,
     "numberOfChannels" INTEGER,
     "size" INTEGER,
+    "favorite" BOOLEAN NOT NULL DEFAULT false,
+    "playCount" INTEGER NOT NULL DEFAULT 0,
     CONSTRAINT "Music_albumId_fkey" FOREIGN KEY ("albumId") REFERENCES "Album" ("id") ON DELETE SET NULL ON UPDATE CASCADE,
     CONSTRAINT "Music_artistId_fkey" FOREIGN KEY ("artistId") REFERENCES "Artist" ("id") ON DELETE SET NULL ON UPDATE CASCADE
 );

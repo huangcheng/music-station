@@ -1,1 +1,3 @@
-export { default as Tracks } from './tracks';
+export { Tracks, tracksContext, TracksProvider } from './tracks';
+
+export type { TracksProps } from './tracks';

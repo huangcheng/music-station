@@ -8,14 +8,10 @@ import { cn } from '@/lib';
 import { Track } from '@/components';
 import { useMediaStore } from '@/stores';
 
-import type { TrackProps } from '@/components';
-
-export type TracksProps = Omit<HTMLAttributes<HTMLDivElement>, 'onClick'> &
-  Pick<TrackProps, 'onClick'>;
+export type TracksProps = Omit<HTMLAttributes<HTMLDivElement>, 'onClick'>;
 
 export default function Tracks({
   className,
-  onClick,
   ...rest
 }: TracksProps): ReactElement {
   const { tracks } = useMediaStore(useShallow(({ tracks }) => ({ tracks })));
@@ -28,7 +24,7 @@ export default function Tracks({
       )}
       {...rest}
     >
-      {tracks?.map(({ id, cover, artist, name, duration }) => (
+      {tracks?.map(({ id, cover, artist, name, duration, favorite }) => (
         <Track
           key={id}
           id={id}
@@ -36,7 +32,7 @@ export default function Tracks({
           artist={artist}
           duration={duration ?? 0}
           cover={cover}
-          onClick={onClick}
+          favorite={favorite}
         />
       ))}
     </div>
