@@ -6,6 +6,7 @@
     "dev": "next dev --turbopack",
     "build": "next build --turbopack",
     "start": "next start",
+    "start:docker": "prisma migrate deploy && next start",
     "vercel-build": "prisma generate && prisma migrate deploy && next build",
     "prisma": "prisma generate && prisma migrate deploy",
     "prisma:generate": "prisma generate",
