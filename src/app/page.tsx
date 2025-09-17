@@ -381,7 +381,9 @@ export default function Home(): ReactElement {
               send({ type: 'STOP' });
 
               if (loop !== 'none') {
-                send({ type: 'PLAY_NEXT' });
+                setTimeout(() => {
+                  send({ type: 'PLAY_NEXT' });
+                }, 100);
               }
             }}
             onTimeUpdate={(event) => {

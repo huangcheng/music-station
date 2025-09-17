@@ -64,10 +64,16 @@ const playerMachine = setup({
     })),
     getNextTrack: assign(({ context }: { context: PlayerContext }) => {
       const { loop, tracks } = context;
-      if (!tracks || tracks.length === 0) return {};
+
+      if (!tracks || tracks.length === 0) {
+        return {};
+      }
 
       const currentIndex = tracks.findIndex((t) => t.id === context.track?.id);
-      if (!loop && currentIndex === tracks.length - 1) return {};
+
+      if (!loop && currentIndex === tracks.length - 1) {
+        return {};
+      }
 
       let nextIndex = currentIndex;
 
@@ -97,10 +103,16 @@ const playerMachine = setup({
     }),
     getPrevTrack: assign(({ context }: { context: PlayerContext }) => {
       const { loop, tracks } = context;
-      if (!tracks || tracks.length === 0) return {};
+
+      if (!tracks || tracks.length === 0) {
+        return {};
+      }
 
       const currentIndex = tracks.findIndex((t) => t.id === context.track?.id);
-      if (!loop && currentIndex === 0) return {};
+
+      if (!loop && currentIndex === 0) {
+        return {};
+      }
 
       let prevIndex = currentIndex;
 
