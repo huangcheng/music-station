@@ -2,8 +2,6 @@ import { setup, assign } from 'xstate';
 
 import type { Music } from '@/types';
 
-// type PlayerStatus = 'playing' | 'paused' | 'stopped';
-
 type LoopMode = 'none' | 'one' | 'all' | 'shuffle';
 
 type PlayerContext = {
@@ -13,6 +11,7 @@ type PlayerContext = {
   volume?: number;
   originalVolume?: number;
   loop?: LoopMode;
+  time?: number;
 };
 
 type PlayerEvents =
@@ -27,6 +26,8 @@ type PlayerEvents =
   | { type: 'TOGGLE_PLAY' }
   | { type: 'MUTE' }
   | { type: 'UNMUTE' }
+  | { type: 'SWITCH_LOOP' }
+  | { type: 'SET_TIME'; time: number }
   | { type: 'TOGGLE_MUTE' };
 
 type PlayerInput = {
@@ -42,26 +43,31 @@ const playerMachine = setup({
     input: {} as PlayerInput,
   },
   actions: {
-    toggleMute: assign(({ context }) => {
-      return context.volume === 0
-        ? {
-            volume: context.originalVolume ?? 100,
-          }
-        : {
-            volume: 0,
-          };
+    toggleMute: assign(({ context }) =>
+      context.volume === 0
+        ? { volume: context.originalVolume ?? 100 }
+        : { volume: 0 },
+    ),
+    setVolume: assign((_, { volume }: { volume: number }) => ({
+      volume,
+      originalVolume: volume,
+    })),
+    mute: assign({
+      volume: 0,
     }),
+    unmute: assign(({ context }) => ({
+      volume: context.originalVolume ?? 100,
+    })),
+    setTrack: assign(({ context }, { id }: { id: number }) => ({
+      id,
+      track: context.tracks?.find((t) => t.id === id),
+    })),
     getNextTrack: assign(({ context }: { context: PlayerContext }) => {
       const { loop, tracks } = context;
-      if (!tracks || tracks.length === 0) {
-        return {};
-      }
+      if (!tracks || tracks.length === 0) return {};
 
       const currentIndex = tracks.findIndex((t) => t.id === context.track?.id);
-
-      if (!loop && currentIndex === tracks.length - 1) {
-        return {};
-      }
+      if (!loop && currentIndex === tracks.length - 1) return {};
 
       let nextIndex = currentIndex;
 
@@ -80,6 +86,10 @@ const playerMachine = setup({
         }
       }
 
+      if (loop === 'shuffle' && nextIndex === currentIndex) {
+        nextIndex = (currentIndex + 1) % tracks.length;
+      }
+
       return {
         track: tracks[nextIndex],
         id: tracks[nextIndex].id,
@@ -87,18 +97,13 @@ const playerMachine = setup({
     }),
     getPrevTrack: assign(({ context }: { context: PlayerContext }) => {
       const { loop, tracks } = context;
+      if (!tracks || tracks.length === 0) return {};
 
-      if (!tracks || tracks.length === 0) {
-        return {};
-      }
-
-      const currentIndex = tracks?.findIndex((t) => t.id === context.track?.id);
-
-      if (!loop && currentIndex === 0) {
-        return {};
-      }
+      const currentIndex = tracks.findIndex((t) => t.id === context.track?.id);
+      if (!loop && currentIndex === 0) return {};
 
       let prevIndex = currentIndex;
+
       switch (loop) {
         case 'one': {
           prevIndex = currentIndex;
@@ -114,11 +119,30 @@ const playerMachine = setup({
         }
       }
 
+      if (loop === 'shuffle' && prevIndex === currentIndex) {
+        prevIndex = (currentIndex + 1) % tracks.length;
+      }
+
       return {
         track: tracks[prevIndex],
         id: tracks[prevIndex].id,
       };
     }),
+    switchLoop: assign(({ context: { loop } }) => {
+      const modes: LoopMode[] = ['none', 'one', 'all', 'shuffle'];
+
+      if (loop === undefined) {
+        return { loop: 'none' };
+      }
+
+      const index = modes.indexOf(loop);
+      const nextIndex = (index + 1) % modes.length;
+
+      return { loop: modes[nextIndex] };
+    }),
+    setTime: assign((_, { time }: { time: number }) => ({
+      time,
+    })),
   },
 }).createMachine({
   id: 'player',
@@ -132,172 +156,87 @@ const playerMachine = setup({
   states: {
     stopped: {
       on: {
-        PLAY: {
-          target: 'playing',
-        },
-        SET_VOLUME: {
-          actions: assign(({ event: { volume } }) => ({
-            volume: volume,
-            originalVolume: volume,
-          })),
-        },
-        SET_TRACKS: {
-          actions: assign(({ event: { tracks } }) => ({
-            tracks,
-          })),
-        },
-        MUTE: {
-          actions: assign({
-            volume: 0,
-          }),
-        },
-        TOGGLE_MUTE: {
-          actions: [
-            {
-              type: 'toggleMute',
-            },
-          ],
-        },
-        UNMUTE: {
-          actions: assign(({ context }) => ({
-            volume: context.originalVolume ?? 100,
-          })),
-        },
+        PLAY: { target: 'playing' },
         TOGGLE_PLAY: {
           target: 'playing',
-        },
-        PLAY_NEXT: {
-          target: 'playing',
-          actions: [
-            {
-              type: 'getNextTrack',
-            },
-          ],
-        },
-        PLAY_PREV: {
-          target: 'playing',
-          actions: [
-            {
-              type: 'getPrevTrack',
-            },
-          ],
-        },
-        SET_TRACK: {
-          actions: assign(({ event: { id }, context: { tracks } }) => ({
-            id,
-            track: tracks?.find((t) => t.id === id),
-          })),
         },
       },
     },
     playing: {
       on: {
-        PLAY: {
-          target: 'playing',
-        },
-        PAUSE: {
-          target: 'paused',
-        },
-        STOP: {
-          target: 'stopped',
-        },
+        PLAY: { target: 'playing' },
+        PAUSE: { target: 'paused' },
+        STOP: { target: 'stopped' },
         SET_VOLUME: {
-          actions: assign(({ event: { volume } }) => ({
-            volume: volume,
-            originalVolume: volume,
-          })),
-        },
-        SET_TRACKS: {
-          actions: assign(({ event: { tracks } }) => ({
-            tracks,
-          })),
-        },
-        TOGGLE_MUTE: {
           actions: [
             {
-              type: 'toggleMute',
+              type: 'setVolume',
+              params: ({ event: { volume } }) => ({ volume }),
             },
           ],
         },
-        TOGGLE_PLAY: {
-          target: 'paused',
-        },
-        PLAY_NEXT: {
-          target: 'playing',
-          actions: [
-            {
-              type: 'getNextTrack',
-            },
-          ],
-        },
-        PLAY_PREV: {
-          target: 'playing',
-          actions: [
-            {
-              type: 'getPrevTrack',
-            },
-          ],
-        },
-        SET_TRACK: {
-          actions: assign(({ event: { id }, context: { tracks } }) => ({
-            id,
-            track: tracks?.find((t) => t.id === id),
-          })),
-        },
+        TOGGLE_PLAY: { target: 'paused' },
       },
     },
     paused: {
       on: {
-        PLAY: {
-          target: 'playing',
-        },
-        STOP: {
-          target: 'stopped',
-        },
-        SET_VOLUME: {
-          actions: assign(({ event: { volume } }) => ({
-            volume: volume,
-            originalVolume: volume,
-          })),
-        },
-        SET_TRACKS: {
-          actions: assign(({ event: { tracks } }) => ({
-            tracks,
-          })),
-        },
-        TOGGLE_MUTE: {
-          actions: [
-            {
-              type: 'toggleMute',
-            },
-          ],
-        },
-        TOGGLE_PLAY: {
-          target: 'playing',
-        },
-        PLAY_NEXT: {
-          target: 'playing',
-          actions: [
-            {
-              type: 'getNextTrack',
-            },
-          ],
-        },
-        PLAY_PREV: {
-          target: 'playing',
-          actions: [
-            {
-              type: 'getPrevTrack',
-            },
-          ],
-        },
-        SET_TRACK: {
-          actions: assign(({ event: { id }, context: { tracks } }) => ({
-            id,
-            track: tracks?.find((t) => t.id === id),
-          })),
-        },
+        PLAY: { target: 'playing' },
+        STOP: { target: 'stopped' },
+        TOGGLE_PLAY: { target: 'playing' },
       },
+    },
+  },
+  on: {
+    SET_VOLUME: {
+      actions: [
+        {
+          type: 'setVolume',
+          params: ({ event: { volume } }) => ({ volume }),
+        },
+      ],
+    },
+    SET_TRACKS: {
+      actions: assign(({ event: { tracks } }) => ({ tracks })),
+    },
+    MUTE: {
+      actions: [{ type: 'mute' }],
+    },
+    TOGGLE_MUTE: {
+      actions: [{ type: 'toggleMute' }],
+    },
+    UNMUTE: {
+      actions: [{ type: 'unmute' }],
+    },
+    PLAY_NEXT: {
+      target: '.playing',
+      actions: [{ type: 'getNextTrack' }],
+    },
+    PLAY_PREV: {
+      target: '.playing',
+      actions: [{ type: 'getPrevTrack' }],
+    },
+    SET_TRACK: {
+      actions: [
+        {
+          type: 'setTrack',
+          params: ({ event: { id } }) => ({ id }),
+        },
+      ],
+    },
+    SWITCH_LOOP: {
+      actions: [
+        {
+          type: 'switchLoop',
+        },
+      ],
+    },
+    SET_TIME: {
+      actions: [
+        {
+          type: 'setTime',
+          params: ({ event: { time } }) => ({ time }),
+        },
+      ],
     },
   },
 });

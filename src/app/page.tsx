@@ -9,10 +9,12 @@ import { useObservable, useSubscription } from 'observable-hooks';
 import { useMachine } from '@xstate/react';
 import { createScope, animate } from 'animejs';
 import { useShallow } from 'zustand/react/shallow';
+import { useLocalStorage, useMount } from 'react-use';
 import {
   Home as HomeIcon,
   Album,
   Heart,
+  HeartPulse,
   ListMusic,
   Settings,
   Shuffle,
@@ -22,14 +24,19 @@ import {
   SkipForward,
   Play,
   Pause,
+  Volume1,
+  Volume2,
+  VolumeX,
 } from 'lucide-react';
 
 import type { ReactElement } from 'react';
 import type { Scope } from 'animejs';
+import type { Snapshot } from 'xstate';
 
 import { cn, formatSampleRate } from '@/lib';
 import { useMediaStore } from '@/stores';
 import { playerMachine } from '@/machines';
+import { Slider } from '@/components';
 
 import { Tracks, TracksProvider } from './_components';
 
@@ -53,10 +60,17 @@ export default function Home(): ReactElement {
     })),
   );
 
+  const [playerStateValue, setPlayerStateValue] =
+    useLocalStorage('states/player');
+
   const [snapshot, send] = useMachine(playerMachine, {
     input: {
-      tracks,
+      tracks: tracks ?? [],
     },
+    snapshot: {
+      ...(playerStateValue as Snapshot<typeof playerMachine>),
+      value: 'stopped',
+    } as unknown as Snapshot<typeof playerMachine>,
   });
 
   const [state, setState] = useImmer<State>({
@@ -67,9 +81,9 @@ export default function Home(): ReactElement {
 
   const { nav, canvasHeight } = state;
 
-  const { context } = snapshot;
+  const { context, value } = snapshot;
 
-  const { track, loop } = context;
+  const { track, loop, volume } = context ?? {};
 
   const setNav = useCallback(
     (nav: State['nav']) => {
@@ -106,28 +120,6 @@ export default function Home(): ReactElement {
 
   useSubscription(resize$);
 
-  const playback$ = useObservable(
-    (inputs$) =>
-      inputs$.pipe(
-        switchMap(([audio, context, send]) =>
-          fromEvent(audio.current!, 'ended').pipe(
-            tap(() => {
-              const { loop } = context;
-
-              send({ type: 'STOP' });
-
-              if (loop !== 'none') {
-                send({ type: 'PLAY_NEXT' });
-              }
-            }),
-          ),
-        ),
-      ),
-    [audio, context, send],
-  );
-
-  useSubscription(playback$);
-
   const handleTrackClick = useCallback(
     (id: number) => {
       send({
@@ -151,7 +143,7 @@ export default function Home(): ReactElement {
     [handleTrackClick, handleRefresh],
   );
 
-  const LoopIcon = useCallback((): ReactElement => {
+  const Loop = useCallback((): ReactElement => {
     switch (loop) {
       case 'one': {
         return <Repeat1 size={20} />;
@@ -163,10 +155,22 @@ export default function Home(): ReactElement {
         return <Shuffle size={20} />;
       }
       default: {
-        return <Repeat1 size={20} className="text-gray-400" />;
+        return <Repeat1 size={20} color="#8E929B" />;
       }
     }
   }, [loop]);
+
+  const Volume = useCallback((): ReactElement => {
+    if (volume === 0) {
+      return <VolumeX size={20} />;
+    }
+
+    if (volume && volume <= 50) {
+      return <Volume1 size={20} />;
+    }
+
+    return <Volume2 size={20} />;
+  }, [volume]);
 
   useEffect(() => {
     if (ref.current) {
@@ -195,20 +199,16 @@ export default function Home(): ReactElement {
   }, [fetch]);
 
   useEffect(() => {
-    const { volume } = context;
-
     if (audio.current && volume !== undefined && volume >= 0) {
       audio.current.volume = Math.min(volume / 100, 1);
     }
-  }, [audio, context]);
+  }, [audio, volume]);
 
   useEffect(() => {
-    const { track } = context;
-
     if (audio.current && track?.file !== undefined) {
       audio.current.src = track.file;
     }
-  }, [audio, context]);
+  }, [audio, track]);
 
   useEffect(
     () =>
@@ -220,8 +220,6 @@ export default function Home(): ReactElement {
   );
 
   useEffect(() => {
-    const { value } = snapshot;
-
     if (audio.current) {
       switch (value) {
         case 'playing': {
@@ -238,7 +236,22 @@ export default function Home(): ReactElement {
         }
       }
     }
-  }, [audio, snapshot]);
+  }, [audio, value, track]);
+
+  useEffect(() => {
+    setPlayerStateValue(snapshot);
+  }, [snapshot, setPlayerStateValue]);
+
+  useMount(() => {
+    const value = playerStateValue as unknown as Snapshot<typeof playerMachine>;
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-expect-error
+    const time = value?.context?.time ?? 0;
+
+    if (audio.current) {
+      audio.current.currentTime = time;
+    }
+  });
 
   return (
     <div
@@ -360,11 +373,32 @@ export default function Home(): ReactElement {
       </div>
       <div className="w-full h-32 pr-10 pl-4 bg-orange-50 flex flex-row items-center">
         <div className="w-14 mr-4">
-          <audio ref={audio} />
+          <audio
+            ref={audio}
+            onEnded={() => {
+              const { loop } = context;
+
+              send({ type: 'STOP' });
+
+              if (loop !== 'none') {
+                send({ type: 'PLAY_NEXT' });
+              }
+            }}
+            onTimeUpdate={(event) => {
+              const currentTime = (event.target as HTMLAudioElement)
+                .currentTime;
+
+              send({ type: 'SET_TIME', time: currentTime });
+            }}
+          />
         </div>
-        <div className="flex-1 flex flex-row items-center gap-x-4">
+        <div
+          suppressHydrationWarning
+          className="flex-1 flex flex-row items-center gap-x-4"
+        >
           {track?.cover ? (
             <Image
+              suppressHydrationWarning
               src={track.cover}
               alt="Cover"
               width={48}
@@ -374,8 +408,8 @@ export default function Home(): ReactElement {
           ) : (
             <div className="w-12 h-12 bg-gray-300 rounded-md" />
           )}
-          <div className="flex flex-col flex-1">
-            <div className="grid grid-cols-[2fr_6fr_2fr] items-center ">
+          <div className="flex flex-col flex-1 items-center">
+            <div className="grid grid-cols-[2fr_6fr_2fr] items-center w-full">
               <div>
                 <p className="text-base">
                   {track?.name ?? ''}
@@ -385,11 +419,78 @@ export default function Home(): ReactElement {
                 </p>
                 <p>{track?.artist ?? ''}</p>
               </div>
-              <div className="">
-                <button className="w-6 h-6 flex flex-row items-center justify-center">
-                  <LoopIcon />
+              <div className="flex flex-row items-center justify-center gap-x-4">
+                <button className="w-10 h-10 flex flex-row items-center justify-center">
+                  {track?.favorite === true ? (
+                    <HeartPulse size={20} color="#FF0000" />
+                  ) : (
+                    <Heart size={20} color="#FF0000" />
+                  )}
+                </button>
+                <button
+                  className="w-10 h-10 flex flex-row items-center justify-center"
+                  onClick={() => send({ type: 'PLAY_PREV' })}
+                >
+                  <SkipBack />
+                </button>
+                <button
+                  className="w-10 h-10 flex flex-row items-center justify-center bg-orange-400 rounded-full"
+                  onClick={() => send({ type: 'TOGGLE_PLAY' })}
+                >
+                  {snapshot?.value === 'playing' ? <Pause /> : <Play />}
+                </button>
+                <button
+                  className="w-10 h-10 flex flex-row items-center justify-center"
+                  onClick={() => send({ type: 'PLAY_NEXT' })}
+                >
+                  <SkipForward />
+                </button>
+                <button
+                  className="w-10 h-10 flex flex-row items-center justify-center"
+                  onClick={() => send({ type: 'SWITCH_LOOP' })}
+                >
+                  <Loop />
                 </button>
               </div>
+              <div className="flex flex-row items-center justify-end gap-x-4">
+                <Volume />
+                <Slider
+                  className="flex-1"
+                  value={[volume ?? 100]}
+                  onValueChange={(value) =>
+                    send({ type: 'SET_VOLUME', volume: value[0] })
+                  }
+                  min={0}
+                  max={100}
+                  step={1}
+                />
+              </div>
+            </div>
+            <div className="flex flex-row items-center gap-x-4 mt-2 w-4/5">
+              <p className="font-mono">
+                {new Date((context?.time ?? 0) * 1000)
+                  .toISOString()
+                  .slice(14, 19)}
+              </p>
+              <Slider
+                className="flex-1"
+                value={[context?.time ?? 0]}
+                onValueChange={(value) => {
+                  send({ type: 'SET_TIME', time: value[0] });
+
+                  if (audio.current) {
+                    audio.current.currentTime = value[0];
+                  }
+                }}
+                min={0}
+                max={track?.duration ?? 0}
+                step={1}
+              />
+              <p className="font-mono">
+                {new Date((track?.duration ?? 0) * 1000)
+                  .toISOString()
+                  .slice(14, 19)}
+              </p>
             </div>
           </div>
         </div>

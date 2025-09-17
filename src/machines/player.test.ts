@@ -1,6 +1,6 @@
 import { createActor } from 'xstate';
 
-import { playerMachine } from './player';
+import playerMachine from './player';
 
 describe('Test the Player State Machine', () => {
   it('should have correct state', () => {
@@ -27,5 +27,19 @@ describe('Test the Player State Machine', () => {
     actor.send({ type: 'SET_TRACK', id: 10 });
 
     expect(actor.getSnapshot().context.id).toBe(10);
+
+    expect(actor.getSnapshot().context.volume).toBe(100);
+
+    actor.send({ type: 'SET_VOLUME', volume: 50 });
+
+    expect(actor.getSnapshot().context.volume).toBe(50);
+
+    actor.send({ type: 'MUTE' });
+
+    expect(actor.getSnapshot().context.volume).toBe(0);
+
+    actor.send({ type: 'UNMUTE' });
+
+    expect(actor.getSnapshot().context.volume).toBe(50);
   });
 });

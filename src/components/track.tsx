@@ -1,7 +1,7 @@
 import { useContext, useEffect } from 'react';
 import { useMachine } from '@xstate/react';
 import Image from 'next/image';
-import { HeartPulse, HeartCrack, EllipsisVertical } from 'lucide-react';
+import { HeartPulse, Heart, EllipsisVertical } from 'lucide-react';
 
 import type { ReactElement, HTMLAttributes } from 'react';
 
@@ -75,9 +75,9 @@ export default function Track({
         }}
       >
         {isFavorite ? (
-          <HeartCrack size={20} color="#FF0000" />
-        ) : (
           <HeartPulse size={20} color="#FF0000" />
+        ) : (
+          <Heart size={20} color="#FF0000" />
         )}
       </button>
       <div className="flex-1 grid grid-cols-[2fr_8fr] items-center">
