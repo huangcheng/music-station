@@ -67,10 +67,14 @@ export default function Home(): ReactElement {
     input: {
       tracks: tracks ?? [],
     },
-    snapshot: {
-      ...(playerStateValue as Snapshot<typeof playerMachine>),
-      value: 'stopped',
-    } as unknown as Snapshot<typeof playerMachine>,
+    snapshot:
+      Object.keys((playerStateValue as Snapshot<typeof playerMachine>) ?? {})
+        .length === 0
+        ? undefined
+        : ({
+            ...(playerStateValue as Snapshot<typeof playerMachine>),
+            value: 'stopped',
+          } as unknown as Snapshot<typeof playerMachine>),
   });
 
   const [state, setState] = useImmer<State>({
