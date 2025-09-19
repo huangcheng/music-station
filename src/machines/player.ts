@@ -1,8 +1,6 @@
 import { setup, assign } from 'xstate';
 
-import type { Music } from '@/types';
-
-type LoopMode = 'none' | 'one' | 'all' | 'shuffle';
+import type { Music, LoopMode } from '@/types';
 
 type PlayerContext = {
   id?: number;

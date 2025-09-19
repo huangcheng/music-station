@@ -54,7 +54,7 @@ export default function Upload() {
 
         setUploadedFiles((prev) => [...prev, newFile]);
 
-        // upload with XMLHttpRequest so we can track progress per file
+        // upload with XMLHttpRequest so we can track time per file
         const formData = new FormData();
 
         formData.append('file', file);
@@ -63,7 +63,7 @@ export default function Upload() {
 
         xhr.open('POST', '/api/upload');
 
-        xhr.upload.addEventListener('progress', (e) => {
+        xhr.upload.addEventListener('time', (e) => {
           if (e.lengthComputable) {
             const percent = (e.loaded / e.total) * 100;
 

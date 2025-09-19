@@ -4,3 +4,5 @@ kbps
 animejs
 dyld
 gqwwm
+Crossfade
+Gapless

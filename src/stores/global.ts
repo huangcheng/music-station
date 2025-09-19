@@ -1,28 +1,34 @@
 import { createStore } from 'zustand/vanilla';
 
+import { NAVIGATION_ITEMS, LIBRARY_ITEMS, DISCOVER_ITEMS } from '@/constants';
+
+type NAV =
+  | (typeof NAVIGATION_ITEMS)[number]['id']
+  | (typeof LIBRARY_ITEMS)[number]['id']
+  | (typeof DISCOVER_ITEMS)[number]['id']
+  | 'settings';
+
 export type GlobalState = {
-  version: string;
+  nav: NAV;
 };
 
 export type GlobalActions = {
-  setVersion: (version: string) => void;
+  setNav: (nav: NAV) => void;
 };
 
 export type GlobalStore = GlobalState & GlobalActions;
 
-export const initGlobalStore = (): GlobalState => {
-  return { version: '0.0.0' };
+export const defaultInitState: GlobalState = {
+  nav: 'home',
 };
 
-export const defaultInitState: GlobalState = {
-  version: '0.0.0',
-};
+export const initGlobalStore = (): GlobalState => defaultInitState;
 
 export const createGlobalStore = (
   initState: GlobalState = defaultInitState,
 ) => {
   return createStore<GlobalStore>()((set) => ({
     ...initState,
-    setVersion: (version: string) => set(() => ({ version })),
+    setNav: (nav: NAV) => set(() => ({ nav })),
   }));
 };

@@ -1,25 +1,15 @@
 {
-  "Player": {
-    "All Music": "所有音乐",
-    "Default Playlist": "默认播放列表"
-  },
-  "Music": {
-    "Unknown Artist": "未知艺术家",
-    "Unknown Album": "未知专辑"
-  },
-  "Upload": {
-    "title": "上传您的音乐文件",
-    "description": "将音频文件拖放到此处或点击以浏览",
-    "Upload": {
-      "title": "将音乐文件拖到此处",
-      "description": "或点击下方按钮从电脑中选择文件",
-      "button": "选择文件"
-    },
-    "List": {
-      "title": "已上传的音乐",
-      "completed": "上传完成",
-      "uploaded": "已上传",
-      "error": "上传失败"
-    }
-  }
+  "Home": "主页",
+  "Search": "搜索",
+  "Your Library": "您的音乐库",
+  "Playlists": "播放列表",
+  "Albums": "专辑",
+  "Artists": "艺术家",
+  "Liked Songs": "我喜欢的歌曲",
+  "Trending": "热门",
+  "Recently Played": "最近播放",
+  "Radio": "电台",
+  "Settings": "设置",
+  "Discover": "发现",
+  "Music": "音乐"
 }

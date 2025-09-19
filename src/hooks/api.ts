@@ -10,6 +10,7 @@ import type {
   Response,
   Music,
   Artist,
+  Album,
   Playlist,
   CreatePlayListRequest,
   UpdateMusicRequest,
@@ -37,6 +38,8 @@ export const fetch$ = <R>(url: string, init?: RequestInit): Observable<R> =>
 export const fetchMusic$ = () => fetch$<Music[]>('/music');
 
 export const fetchArtists$ = () => fetch$<Artist[]>('/artists');
+
+export const fetchAlbums$ = () => fetch$<Album[]>('/albums');
 
 export const fetchPlaylists$ = () => fetch$<Playlist[]>('/playlists');
 

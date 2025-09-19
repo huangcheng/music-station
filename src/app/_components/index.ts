@@ -1,3 +1,5 @@
-export { Tracks, TracksContext, TracksProvider } from './tracks';
+export { default as Main } from './main';
 
-export type { TracksProps } from './tracks';
+export { default as Sidebar } from './sidebar';
+
+export { default as Controls } from './controls';
