@@ -2,7 +2,7 @@ import { setup, assign } from 'xstate';
 
 import type { Music, LoopMode } from '@/types';
 
-type PlayerContext = {
+export type PlayerContext = {
   id?: number;
   tracks?: Music[];
   track?: Music;

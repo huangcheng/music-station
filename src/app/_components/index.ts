@@ -1,4 +1,4 @@
-export { default as Main } from './main';
+export { Main, MainContext, MainContextProvider } from './main';
 
 export { default as Sidebar } from './sidebar';
 
