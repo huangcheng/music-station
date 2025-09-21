@@ -10,7 +10,7 @@ CREATE TABLE "Album" (
     "name" TEXT NOT NULL,
     "year" INTEGER,
     "date" TEXT,
-    "tracks" INTEGER,
+    "trackCount" INTEGER,
     "artistId" INTEGER,
     CONSTRAINT "Album_artistId_fkey" FOREIGN KEY ("artistId") REFERENCES "Artist" ("id") ON DELETE SET NULL ON UPDATE CASCADE
 );
@@ -22,14 +22,14 @@ CREATE TABLE "Artist" (
 );
 
 -- CreateTable
-CREATE TABLE "Music" (
+CREATE TABLE "Track" (
     "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     "hash" TEXT NOT NULL,
     "name" TEXT NOT NULL,
     "year" INTEGER,
     "artistId" INTEGER,
     "albumId" INTEGER,
-    "track" INTEGER,
+    "trackNo" INTEGER,
     "disk" INTEGER,
     "cover" TEXT,
     "file" TEXT NOT NULL,
@@ -44,18 +44,19 @@ CREATE TABLE "Music" (
     "size" INTEGER,
     "favorite" BOOLEAN NOT NULL DEFAULT false,
     "playCount" INTEGER NOT NULL DEFAULT 0,
-    CONSTRAINT "Music_albumId_fkey" FOREIGN KEY ("albumId") REFERENCES "Album" ("id") ON DELETE SET NULL ON UPDATE CASCADE,
-    CONSTRAINT "Music_artistId_fkey" FOREIGN KEY ("artistId") REFERENCES "Artist" ("id") ON DELETE SET NULL ON UPDATE CASCADE
+    "recentlyPlayed" INTEGER,
+    CONSTRAINT "Track_albumId_fkey" FOREIGN KEY ("albumId") REFERENCES "Album" ("id") ON DELETE SET NULL ON UPDATE CASCADE,
+    CONSTRAINT "Track_artistId_fkey" FOREIGN KEY ("artistId") REFERENCES "Artist" ("id") ON DELETE SET NULL ON UPDATE CASCADE
 );
 
 -- CreateTable
-CREATE TABLE "MusicGenre" (
-    "musicId" INTEGER NOT NULL,
+CREATE TABLE "TrackGenre" (
+    "trackId" INTEGER NOT NULL,
     "genreId" INTEGER NOT NULL,
 
-    PRIMARY KEY ("musicId", "genreId"),
-    CONSTRAINT "MusicGenre_musicId_fkey" FOREIGN KEY ("musicId") REFERENCES "Music" ("id") ON DELETE RESTRICT ON UPDATE CASCADE,
-    CONSTRAINT "MusicGenre_genreId_fkey" FOREIGN KEY ("genreId") REFERENCES "Genre" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
+    PRIMARY KEY ("trackId", "genreId"),
+    CONSTRAINT "TrackGenre_trackId_fkey" FOREIGN KEY ("trackId") REFERENCES "Track" ("id") ON DELETE RESTRICT ON UPDATE CASCADE,
+    CONSTRAINT "TrackGenre_genreId_fkey" FOREIGN KEY ("genreId") REFERENCES "Genre" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
 );
 
 -- CreateTable
@@ -65,13 +66,13 @@ CREATE TABLE "Playlist" (
 );
 
 -- CreateTable
-CREATE TABLE "PlaylistMusic" (
+CREATE TABLE "PlaylistTrack" (
     "playlistId" INTEGER NOT NULL,
-    "musicId" INTEGER NOT NULL,
+    "trackId" INTEGER NOT NULL,
 
-    PRIMARY KEY ("playlistId", "musicId"),
-    CONSTRAINT "PlaylistMusic_playlistId_fkey" FOREIGN KEY ("playlistId") REFERENCES "Playlist" ("id") ON DELETE RESTRICT ON UPDATE CASCADE,
-    CONSTRAINT "PlaylistMusic_musicId_fkey" FOREIGN KEY ("musicId") REFERENCES "Music" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
+    PRIMARY KEY ("playlistId", "trackId"),
+    CONSTRAINT "PlaylistTrack_playlistId_fkey" FOREIGN KEY ("playlistId") REFERENCES "Playlist" ("id") ON DELETE RESTRICT ON UPDATE CASCADE,
+    CONSTRAINT "PlaylistTrack_trackId_fkey" FOREIGN KEY ("trackId") REFERENCES "Track" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
 );
 
 -- CreateIndex
@@ -84,4 +85,4 @@ CREATE UNIQUE INDEX "Album_name_key" ON "Album"("name");
 CREATE UNIQUE INDEX "Artist_name_key" ON "Artist"("name");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Music_hash_key" ON "Music"("hash");
+CREATE UNIQUE INDEX "Track_hash_key" ON "Track"("hash");

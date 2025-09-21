@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useEffect } from 'react';
+import { useRef, useEffect, useMemo, useCallback } from 'react';
 import { useMachine } from '@xstate/react';
 import { createScope } from 'animejs';
 import { useShallow } from 'zustand/react/shallow';
@@ -13,7 +13,9 @@ import type { Snapshot } from 'xstate';
 import { useMediaStore } from '@/stores';
 import { playerMachine } from '@/machines';
 
-import { Sidebar, Main, Controls } from './_components';
+import { Sidebar, Main, Controls, MainContextProvider } from './_components';
+
+import type { MainContextProps } from './_components';
 
 export default function Home(): ReactElement {
   const root = useRef<HTMLDivElement | null>(null);
@@ -48,19 +50,27 @@ export default function Home(): ReactElement {
 
   const { track, loop, volume, time } = context ?? {};
 
-  // const handleTrackClick = useCallback(
-  //   (id: number) => {
-  //     send({
-  //       type: 'SET_TRACK',
-  //       id,
-  //     });
-  //
-  //     send({
-  //       type: 'PLAY',
-  //     });
-  //   },
-  //   [send],
-  // );
+  const handlePlay = useCallback(
+    (id: number) => {
+      send({
+        type: 'SET_TRACK',
+        id,
+      });
+
+      send({
+        type: 'PLAY',
+      });
+    },
+    [send],
+  );
+
+  const mainContext = useMemo<MainContextProps>(
+    () => ({
+      playerContext: context,
+      onPlay: handlePlay,
+    }),
+    [context, handlePlay],
+  );
 
   useEffect(() => {
     scope.current = createScope({ root }).add(() => {});
@@ -149,7 +159,9 @@ export default function Home(): ReactElement {
       />
       <div className="flex flex-1 overflow-hidden">
         <Sidebar />
-        <Main />
+        <MainContextProvider value={mainContext}>
+          <Main />
+        </MainContextProvider>
       </div>
       <Controls
         volume={volume}

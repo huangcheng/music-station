@@ -1,15 +1,15 @@
 export type CreatePlayListRequest = {
   name: string;
 
-  music: number[];
+  tracks: number[];
 };
 
-export type UpdateMusicRequest = {
+export type UpdateTrackRequest = {
   name?: string;
   year?: number | null;
   artistId?: number | null;
   albumId?: number | null;
-  track?: number | null;
+  trackNo?: number | null;
   disk?: number | null;
   cover?: string | null;
   date?: string | null;
@@ -23,5 +23,6 @@ export type UpdateMusicRequest = {
   size?: number | null;
   favorite?: boolean;
   playCount?: number;
+  recentlyPlayed?: number | null;
   genre?: number[];
 };

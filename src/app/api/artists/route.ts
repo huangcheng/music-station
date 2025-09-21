@@ -10,20 +10,22 @@ export async function GET() {
   const ob$ = from(
     prisma.artist.findMany({
       include: {
-        music: true,
+        tracks: true,
         albums: true,
       },
       orderBy: { name: 'asc' },
     }),
   ).pipe(
     map((artist) =>
-      artist.map(({ music, albums, ...rest }) => ({
+      artist.map(({ tracks, albums, ...rest }) => ({
         ...rest,
-        music: music.map((m) => omit(m, ['hash', 'albumId', 'albumId'])),
+        tracks: tracks.map((track) =>
+          omit(track, ['hash', 'albumId', 'albumId']),
+        ),
         albums: albums.map((album) => omit(album, ['artistId'])),
       })),
     ),
-    map((music) => music.filter((m) => m.music.length > 0)),
+    map((tracks) => tracks.filter(({ tracks }) => tracks.length > 0)),
     map((data) => NextResponse.json({ data })),
     catchError((err) =>
       of(NextResponse.json({ message: err.message }, { status: 500 })),

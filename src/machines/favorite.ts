@@ -3,7 +3,7 @@ import { setup, assign, fromPromise } from 'xstate';
 import { lastValueFrom } from 'rxjs';
 import { map } from 'rxjs/operators';
 
-import { updateMusic$ } from '@/hooks';
+import { updateTrack$ } from '@/hooks';
 
 type FavoriteContext = {
   /**
@@ -37,7 +37,7 @@ const favoriteMachine = setup({
   actors: {
     updateFavorite: fromPromise<boolean, FavoriteParams>(
       async ({ input: { id, favorite } }) => {
-        const ob$ = updateMusic$(id, { favorite }).pipe(
+        const ob$ = updateTrack$(id, { favorite }).pipe(
           map(({ favorite }) => favorite),
         );
 

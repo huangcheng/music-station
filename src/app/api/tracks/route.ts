@@ -9,47 +9,47 @@ const prisma = new PrismaClient();
 
 export async function GET() {
   const ob$ = from(
-    prisma.music.findMany({
+    prisma.track.findMany({
       include: {
         artist: true,
         album: true,
       },
     }),
   ).pipe(
-    switchMap((music) =>
+    switchMap((tracks) =>
       iif(
-        () => music.length > 0,
+        () => tracks.length > 0,
         defer(() =>
           forkJoin(
-            music.map((m) =>
+            tracks.map((track) =>
               from(
-                prisma.musicGenre.findMany({
-                  where: { musicId: m.id },
+                prisma.trackGenre.findMany({
+                  where: { trackId: track.id },
                   include: { genre: true },
                 }),
               ).pipe(
                 map((genre) => ({
-                  ...m,
+                  ...track,
                   genre,
                 })),
               ),
             ),
           ).pipe(
-            switchMap((music) =>
-              from(getTranslations('Music')).pipe(
+            switchMap((tracks) =>
+              from(getTranslations()).pipe(
                 map((t) => ({
-                  music,
+                  tracks,
                   t,
                 })),
               ),
             ),
-            map(({ music, t }) =>
-              music.map((m) => {
+            map(({ tracks, t }) =>
+              tracks.map((track) => {
                 const record = {
-                  ...m,
-                  genre: m.genre.map((g) => g.genre.name),
-                  artist: m.artist?.name ?? t('Unknown Artist'),
-                  album: m.album?.name ?? t('Unknown Album'),
+                  ...track,
+                  genre: track.genre.map((g) => g.genre.name),
+                  artist: track.artist?.name ?? t('Unknown Artist'),
+                  album: track.album?.name ?? t('Unknown Album'),
                 };
 
                 return omit(record, ['hash', 'artistId', 'albumId']);

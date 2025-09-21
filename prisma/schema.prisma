@@ -15,18 +15,18 @@ model Genre {
   id   Int    @id @default(autoincrement())
   name String @unique
 
-  music MusicGenre[]
+  music TrackGenre[]
 }
 
 model Album {
-  id       Int     @id @default(autoincrement())
-  name     String  @unique
-  year     Int?
-  date     String?
-  tracks   Int?
-  artistId Int?
+  id         Int     @id @default(autoincrement())
+  name       String  @unique
+  year       Int?
+  date       String?
+  trackCount Int?
+  artistId   Int?
 
-  music  Music[]
+  tracks Track[]
   artist Artist? @relation(fields: [artistId], references: [id])
 }
 
@@ -34,18 +34,18 @@ model Artist {
   id   Int    @id @default(autoincrement())
   name String @unique
 
-  music  Music[]
+  tracks Track[]
   albums Album[]
 }
 
-model Music {
+model Track {
   id               Int      @id @default(autoincrement())
   hash             String   @unique
   name             String
   year             Int?
   artistId         Int?
   albumId          Int?
-  track            Int?
+  trackNo          Int?
   disk             Int?
   cover            String?
   file             String
@@ -60,37 +60,38 @@ model Music {
   size             Int?
   favorite         Boolean  @default(false)
   playCount        Int      @default(0)
+  recentlyPlayed   Int?
 
-  genre MusicGenre[]
+  genre TrackGenre[]
 
   album     Album?          @relation(fields: [albumId], references: [id])
   artist    Artist?         @relation(fields: [artistId], references: [id])
-  playlists PlaylistMusic[]
+  playlists PlaylistTrack[]
 }
 
-model MusicGenre {
-  musicId Int
+model TrackGenre {
+  trackId Int
   genreId Int
 
-  music Music @relation(fields: [musicId], references: [id])
+  track Track @relation(fields: [trackId], references: [id])
   genre Genre @relation(fields: [genreId], references: [id])
 
-  @@id([musicId, genreId])
+  @@id([trackId, genreId])
 }
 
 model Playlist {
   id   Int    @id @default(autoincrement())
   name String
 
-  music PlaylistMusic[]
+  tracks PlaylistTrack[]
 }
 
-model PlaylistMusic {
+model PlaylistTrack {
   playlistId Int
-  musicId    Int
+  trackId    Int
 
   playlist Playlist @relation(fields: [playlistId], references: [id])
-  music    Music    @relation(fields: [musicId], references: [id])
+  track    Track    @relation(fields: [trackId], references: [id])
 
-  @@id([playlistId, musicId])
+  @@id([playlistId, trackId])
 }

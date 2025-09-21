@@ -35,7 +35,7 @@ export default function Upload() {
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
-  const t = useTranslations('Upload');
+  const t = useTranslations();
 
   const handleFiles = useCallback(
     (files: File[]) => {
@@ -63,15 +63,20 @@ export default function Upload() {
 
         xhr.open('POST', '/api/upload');
 
-        xhr.upload.addEventListener('time', (e) => {
-          if (e.lengthComputable) {
-            const percent = (e.loaded / e.total) * 100;
+        xhr.upload.addEventListener(
+          'progress',
+          (e: ProgressEvent<XMLHttpRequestEventTarget>) => {
+            if (e.lengthComputable) {
+              const percent = (e.loaded / e.total) * 100;
 
-            setUploadedFiles((prev) =>
-              prev.map((f) => (f.id === id ? { ...f, progress: percent } : f)),
-            );
-          }
-        });
+              setUploadedFiles((prev) =>
+                prev.map((f) =>
+                  f.id === id ? { ...f, progress: percent } : f,
+                ),
+              );
+            }
+          },
+        );
 
         xhr.addEventListener('load', () => {
           if (xhr.status >= 200 && xhr.status < 300) {

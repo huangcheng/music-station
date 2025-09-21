@@ -11,7 +11,7 @@ const prisma = new PrismaClient();
 
 export async function POST(req: NextRequest) {
   const ob$ = from<Promise<CreatePlayListRequest>>(req.json()).pipe(
-    switchMap(({ name, music }) =>
+    switchMap(({ name, tracks }) =>
       from(
         prisma.playlist.create({
           data: {
@@ -21,12 +21,12 @@ export async function POST(req: NextRequest) {
       ).pipe(
         switchMap((playlist) =>
           forkJoin(
-            music.map((id) =>
+            tracks.map((id) =>
               from(
-                prisma.playlistMusic.create({
+                prisma.playlistTrack.create({
                   data: {
                     playlistId: playlist.id,
-                    musicId: id,
+                    trackId: id,
                   },
                 }),
               ).pipe(
@@ -40,15 +40,15 @@ export async function POST(req: NextRequest) {
           ).pipe(
             switchMap(() =>
               from(
-                prisma.playlistMusic.findMany({
+                prisma.playlistTrack.findMany({
                   where: { playlistId: playlist.id },
                 }),
               ),
             ),
-            map((records) => records.map(({ musicId }) => musicId)),
-            map((music) => ({
+            map((records) => records.map(({ trackId }) => trackId)),
+            map((tracks) => ({
               ...playlist,
-              music,
+              tracks,
             })),
           ),
         ),

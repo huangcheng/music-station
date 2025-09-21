@@ -1,15 +1,39 @@
-import { setup, assign } from 'xstate';
+import { of, lastValueFrom } from 'rxjs';
+import { map, catchError } from 'rxjs/operators';
+import { setup, assign, fromPromise, stopChild } from 'xstate';
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
 
-import type { Music, LoopMode } from '@/types';
+import type { Track, LoopMode } from '@/types';
+
+import { updateTrack$ } from '@/hooks';
+
+dayjs.extend(utc);
+
+const updateRecentlyPlayedActor = fromPromise(
+  async ({ input: { id } }: { input: { id: number } }): Promise<boolean> => {
+    const timestamp = dayjs().utc().unix();
+
+    const ob$ = updateTrack$(id, {
+      recentlyPlayed: timestamp,
+    }).pipe(
+      map(() => true),
+      catchError(() => of(false)),
+    );
+
+    return await lastValueFrom(ob$);
+  },
+);
 
 export type PlayerContext = {
   id?: number;
-  tracks?: Music[];
-  track?: Music;
+  tracks?: Track[];
+  track?: Track;
   volume?: number;
   originalVolume?: number;
   loop?: LoopMode;
   time?: number;
+  updateRecentlyPlayedActorRef?: unknown;
 };
 
 type PlayerEvents =
@@ -20,7 +44,7 @@ type PlayerEvents =
   | { type: 'PLAY_NEXT' }
   | { type: 'PLAY_PREV' }
   | { type: 'SET_TRACK'; id: number }
-  | { type: 'SET_TRACKS'; tracks: Music[] }
+  | { type: 'SET_TRACKS'; tracks: Track[] }
   | { type: 'TOGGLE_PLAY' }
   | { type: 'MUTE' }
   | { type: 'UNMUTE' }
@@ -31,7 +55,7 @@ type PlayerEvents =
 type PlayerInput = {
   volume?: number;
   loop?: LoopMode;
-  tracks?: Music[];
+  tracks?: Track[];
 };
 
 const playerMachine = setup({
@@ -138,7 +162,7 @@ const playerMachine = setup({
         id: tracks[prevIndex].id,
       };
     }),
-    switchLoop: assign(({ context: { loop } }) => {
+    switchLoop: assign(({ context: { loop } }): { loop: LoopMode } => {
       const modes: LoopMode[] = ['none', 'one', 'all', 'shuffle'];
 
       if (loop === undefined) {
@@ -148,7 +172,7 @@ const playerMachine = setup({
       const index = modes.indexOf(loop);
       const nextIndex = (index + 1) % modes.length;
 
-      return { loop: modes[nextIndex] };
+      return { loop: modes[nextIndex] as unknown as LoopMode };
     }),
     setTime: assign((_, { time }: { time: number }) => ({
       time,
@@ -173,6 +197,21 @@ const playerMachine = setup({
       },
     },
     playing: {
+      entry: [
+        assign({
+          updateRecentlyPlayedActorRef: ({ context: { id }, spawn }) =>
+            spawn<typeof updateRecentlyPlayedActor>(updateRecentlyPlayedActor, {
+              // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+              // @ts-expect-error
+              id: 'child-update-recently-played',
+              input: { id: id as number },
+            }),
+        }),
+      ],
+      exit: [
+        stopChild('child-update-recently-played'),
+        assign({ updateRecentlyPlayedActorRef: undefined }),
+      ],
       on: {
         PLAY: { target: 'playing' },
         PAUSE: { target: 'paused' },

@@ -2,11 +2,12 @@ import { createContext } from 'react';
 
 import { PlayerContext } from '@/machines';
 
-export interface MainContext {
-  context: PlayerContext;
+export interface MainContextProps {
+  playerContext?: PlayerContext;
+  onPlay?: (id: number) => void;
 }
 
-const MainContext = createContext<MainContext | undefined>(undefined);
+const MainContext = createContext<MainContextProps>({});
 
 MainContext.displayName = 'MainContext';
 

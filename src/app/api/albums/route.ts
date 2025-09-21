@@ -10,19 +10,21 @@ export async function GET() {
   const ob$ = from(
     prisma.album.findMany({
       include: {
-        music: true,
+        tracks: true,
         artist: true,
       },
       orderBy: { name: 'asc' },
     }),
   ).pipe(
     map((albums) =>
-      albums.map(({ music, ...rest }) => ({
+      albums.map(({ tracks, ...rest }) => ({
         ...rest,
-        music: music.map((m) => omit(m, ['hash', 'albumId', 'artistId'])),
+        tracks: tracks.map((track) =>
+          omit(track, ['hash', 'albumId', 'artistId']),
+        ),
       })),
     ),
-    map((albums) => albums.filter((album) => album.music.length > 0)),
+    map((albums) => albums.filter(({ tracks }) => tracks.length > 0)),
     map((data) => NextResponse.json({ data })),
     catchError((err) =>
       of(NextResponse.json({ message: err.message }, { status: 500 })),

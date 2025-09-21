@@ -23,7 +23,7 @@ import type { ReactElement } from 'react';
 
 import { Button, Slider, Badge } from '@/components';
 
-import type { LoopMode, Music } from '@/types';
+import type { LoopMode, Track } from '@/types';
 import { cn, convertToMS, formatSampleRate } from '@/lib';
 
 interface ControlsProps {
@@ -31,7 +31,7 @@ interface ControlsProps {
   isPlaying?: boolean;
   loop?: LoopMode;
   time?: number;
-  track?: Music;
+  track?: Track;
   onNext?: () => void;
   onPrev?: () => void;
   onVolumeChange?: (value: number[]) => void;

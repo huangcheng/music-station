@@ -8,12 +8,13 @@ import type { Observable } from 'rxjs';
 
 import type {
   Response,
-  Music,
+  Track,
   Artist,
   Album,
   Playlist,
   CreatePlayListRequest,
-  UpdateMusicRequest,
+  UpdateTrackRequest,
+  Genre,
 } from '@/types';
 
 export const fetch$ = <R>(url: string, init?: RequestInit): Observable<R> =>
@@ -35,7 +36,7 @@ export const fetch$ = <R>(url: string, init?: RequestInit): Observable<R> =>
     },
   });
 
-export const fetchMusic$ = () => fetch$<Music[]>('/music');
+export const fetchTracks$ = () => fetch$<Track[]>('/tracks');
 
 export const fetchArtists$ = () => fetch$<Artist[]>('/artists');
 
@@ -57,11 +58,13 @@ export const updatePlaylist$ = (id: number, params: CreatePlayListRequest) =>
     body: JSON.stringify(params),
   });
 
-export const updateMusic$ = (
+export const updateTrack$ = (
   id: number,
-  params: Partial<UpdateMusicRequest>,
-): Observable<Music> =>
-  fetch$<Music>(`/music/${id}`, {
+  params: Partial<UpdateTrackRequest>,
+): Observable<Track> =>
+  fetch$<Track>(`/track/${id}`, {
     method: 'PUT',
     body: JSON.stringify(params),
   });
+
+export const fetchGenre$ = () => fetch$<Genre[]>('/genre');

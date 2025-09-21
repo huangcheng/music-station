@@ -6,21 +6,21 @@ import { omit } from 'es-toolkit';
 
 import type { NextRequest } from 'next/server';
 
-import type { UpdateMusicRequest } from '@/types';
+import type { UpdateTrackRequest } from '@/types';
 
 const prisma = new PrismaClient();
 
 export async function PUT(
   req: NextRequest,
-  ctx: RouteContext<'/api/music/[id]'>,
+  ctx: RouteContext<'/api/track/[id]'>,
 ) {
   const ob$ = forkJoin({
     id: from(ctx.params).pipe(map(({ id }) => Number(id))),
-    body: from<Promise<UpdateMusicRequest>>(req.json()),
+    body: from<Promise<UpdateTrackRequest>>(req.json()),
   }).pipe(
     switchMap(({ id, body }) =>
       from(
-        prisma.music.update({
+        prisma.track.update({
           where: { id },
           data: omit(body, ['genre']),
         }),
@@ -29,14 +29,14 @@ export async function PUT(
           iif(
             () => (body.genre ?? []).length > 0,
             defer(() =>
-              from(prisma.musicGenre.deleteMany({ where: { musicId: id } })),
+              from(prisma.trackGenre.deleteMany({ where: { trackId: id } })),
             ).pipe(
               switchMap(() =>
                 forkJoin(
                   (body.genre ?? []).map((genre) =>
                     from(
-                      prisma.musicGenre.create({
-                        data: { musicId: id, genreId: genre },
+                      prisma.trackGenre.create({
+                        data: { trackId: id, genreId: genre },
                       }),
                     ),
                   ),

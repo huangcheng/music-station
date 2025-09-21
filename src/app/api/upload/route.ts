@@ -117,8 +117,8 @@ export async function POST(req: Request) {
               const album = common.album ?? 'Unknown Album';
               const picture = common.picture?.[0];
               const disk = common.disk?.no ?? 1;
-              const track = common.track?.no ?? 0;
-              const tracks = common.track?.of ?? 1;
+              const trackNo = common.track?.no ?? 0;
+              const trackCount = common.track?.of ?? 1;
               const year = common.year;
               const date = common.date;
 
@@ -132,8 +132,8 @@ export async function POST(req: Request) {
                 year,
                 date,
                 disk,
-                track,
-                tracks,
+                trackNo,
+                trackCount,
                 codec,
                 lossless,
                 numberOfChannels,
@@ -155,8 +155,8 @@ export async function POST(req: Request) {
                 year,
                 date,
                 disk,
-                track,
-                tracks,
+                trackNo,
+                trackCount,
                 ...rest
               }) => {
                 return iif(
@@ -199,19 +199,24 @@ export async function POST(req: Request) {
                         prisma.album.upsert({
                           where: { name: album },
                           update: {},
-                          create: { name: album, year, date, tracks },
+                          create: {
+                            name: album,
+                            year,
+                            date,
+                            trackCount,
+                          },
                         }),
                       ),
                     }).pipe(
                       switchMap(({ artist, genre, album }) =>
                         from(
-                          prisma.music.upsert({
+                          prisma.track.upsert({
                             where: { hash },
                             update: {
                               name,
                               cover,
                               disk,
-                              track,
+                              trackNo,
                               year,
                               date,
                               albumId: album.id,
@@ -226,7 +231,7 @@ export async function POST(req: Request) {
                               disk,
                               year,
                               date,
-                              track,
+                              trackNo,
                               albumId: album.id,
                               artistId: artist.id,
                               file: file.fileName,
@@ -241,12 +246,12 @@ export async function POST(req: Request) {
                                     forkJoin(
                                       genre.map((g) =>
                                         from(
-                                          prisma.musicGenre.create({
+                                          prisma.trackGenre.create({
                                             data: {
                                               genre: {
                                                 connect: { id: g.id },
                                               },
-                                              music: {
+                                              track: {
                                                 connect: { id: record.id },
                                               },
                                             },

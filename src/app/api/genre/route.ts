@@ -3,29 +3,29 @@ import { switchMap, map, catchError } from 'rxjs/operators';
 import { NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
 
-import type { Playlist, Response } from '@/types';
+import type { Genre, Response } from '@/types';
 
 const prisma = new PrismaClient();
 
 export async function GET() {
   const ob$ = from(
-    prisma.playlist.findMany({
+    prisma.genre.findMany({
       orderBy: { name: 'asc' },
     }),
   ).pipe(
-    switchMap((playlists) =>
+    switchMap((genre) =>
       iif(
-        () => playlists.length > 0,
+        () => genre.length > 0,
         defer(() =>
           forkJoin(
-            playlists.map((playlist) =>
+            genre.map((g) =>
               from(
-                prisma.playlistTrack.findMany({
-                  where: { playlistId: playlist.id },
+                prisma.trackGenre.findMany({
+                  where: { genreId: g.id },
                 }),
               ).pipe(
                 map((records) => ({
-                  ...playlist,
+                  ...g,
                   tracks: (records ?? []).map(({ trackId }) => trackId),
                 })),
               ),
@@ -35,11 +35,9 @@ export async function GET() {
         of([]),
       ),
     ),
-    map((data: Playlist[]) =>
-      NextResponse.json({ data } as Response<Playlist[]>),
-    ),
+    map((data: Genre[]) => NextResponse.json({ data } as Response<Genre[]>)),
     catchError((err) => {
-      console.error('Error fetching playlists:', err);
+      console.error('Error fetching genre:', err);
 
       return of(NextResponse.json({ message: err.message }, { status: 500 }));
     }),

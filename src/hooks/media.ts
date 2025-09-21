@@ -8,15 +8,15 @@ import type { CreatePlayListRequest, Playlist } from '@/types';
 import {
   addToDefaultPlaylist$,
   fetchArtists$,
-  fetchMusic$,
+  fetchTracks$,
   fetchPlaylists$,
   updatePlaylist$,
 } from './api';
 
-export const useMusicQuery = () =>
+export const useTracksQuery = () =>
   useQuery({
     queryKey: ['tracks'],
-    queryFn: async () => await lastValueFrom(fetchMusic$()),
+    queryFn: async () => await lastValueFrom(fetchTracks$()),
   });
 
 export const useArtistsQuery = () =>

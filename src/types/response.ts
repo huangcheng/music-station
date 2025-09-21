@@ -3,7 +3,7 @@ export type Response<T> = {
   data: T;
 };
 
-export type Music = {
+export type Track = {
   id: number;
   name: string;
   artist: string;
@@ -25,12 +25,13 @@ export type Music = {
   playCount: number;
   numberOfChannels?: number;
   size: number;
+  recentlyPlayed: number;
 };
 
 export type Artist = {
   id: number;
   name: string;
-  music: Music[];
+  tracks: Track[];
   albums: Album[];
 };
 
@@ -39,12 +40,19 @@ export type Album = {
   name: string;
   artist?: string;
   year?: number;
-  music?: Music[];
+  tracks?: Track[];
 };
 
 export type Playlist = {
   id: number;
   name: string;
 
-  music: number[];
+  tracks: number[];
+};
+
+export type Genre = {
+  id: number;
+  name: string;
+
+  tracks: number[];
 };

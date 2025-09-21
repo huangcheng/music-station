@@ -3,26 +3,29 @@ import { forkJoin, lastValueFrom } from 'rxjs';
 
 import {
   fetchArtists$,
-  fetchMusic$,
+  fetchTracks$,
   fetchPlaylists$,
   fetchAlbums$,
+  fetchGenre$,
 } from '@/hooks';
 
-import type { Album, Artist, Music, Playlist } from '@/types';
+import type { Album, Artist, Track, Playlist, Genre } from '@/types';
 
 interface MediaState {
-  tracks: Music[];
+  tracks: Track[];
   artists: Artist[];
   playlists: Playlist[];
   albums: Album[];
+  genre: Genre[];
 }
 
 interface MediaActions {
-  fetchMusic: () => Promise<Music[]>;
+  fetchMusic: () => Promise<Track[]>;
   fetchArtists: () => Promise<Artist[]>;
   fetchPlaylists: () => Promise<Playlist[]>;
   fetchAlbums: () => Promise<Album[]>;
-  fetch: () => Promise<{ tracks: Music[]; artists: Artist[] }>;
+  fetchGenre: () => Promise<Genre[]>;
+  fetch: () => Promise<{ tracks: Track[]; artists: Artist[] }>;
 }
 
 export type MusicStore = MediaState & MediaActions;
@@ -32,8 +35,9 @@ export const useMediaStore = create<MusicStore>((set) => ({
   artists: [],
   playlists: [],
   albums: [],
+  genre: [],
   fetchMusic: async () => {
-    const tracks = await lastValueFrom(fetchMusic$());
+    const tracks = await lastValueFrom(fetchTracks$());
 
     set({ tracks });
 
@@ -60,18 +64,27 @@ export const useMediaStore = create<MusicStore>((set) => ({
 
     return albums;
   },
+  fetchGenre: async () => {
+    const genre: Genre[] = await lastValueFrom(fetchGenre$());
+
+    set({ genre });
+
+    return genre;
+  },
   fetch: async () => {
     const ob$ = forkJoin({
-      tracks: fetchMusic$(),
+      tracks: fetchTracks$(),
       artists: fetchArtists$(),
       albums: fetchAlbums$(),
       playlists: fetchPlaylists$(),
+      genre: fetchGenre$(),
     });
 
-    const { tracks, artists, playlists, albums } = await lastValueFrom(ob$);
+    const { tracks, artists, playlists, albums, genre } =
+      await lastValueFrom(ob$);
 
-    set({ tracks, artists, playlists, albums });
+    set({ tracks, artists, playlists, albums, genre });
 
-    return { tracks, artists, playlists, albums };
+    return { tracks, artists, playlists, albums, genre };
   },
 }));
