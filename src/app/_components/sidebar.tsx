@@ -42,24 +42,34 @@ export default function Sidebar({
   const libraryItems = useMemo(
     () =>
       LIBRARY_ITEMS.map((item) => {
-        if (item.id === 'playlists') {
-          return { ...item, count: playlists.length };
+        switch (item.id) {
+          case 'playlists': {
+            return { ...item, count: playlists.length };
+          }
+          case 'albums': {
+            return { ...item, count: albums.length };
+          }
+          case 'artists': {
+            return { ...item, count: artists.length };
+          }
+          case 'favorites': {
+            return { ...item, count: likedTracks.length };
+          }
+          case 'tracks': {
+            return { ...item, count: tracks.length };
+          }
+          default: {
+            return item;
+          }
         }
-        if (item.id === 'albums') {
-          return { ...item, count: albums.length };
-        }
-        if (item.id === 'artists') {
-          return { ...item, count: artists.length };
-        }
-        if (item.id === 'liked') {
-          return {
-            ...item,
-            count: likedTracks.length,
-          };
-        }
-        return item;
       }),
-    [albums.length, artists.length, likedTracks.length, playlists.length],
+    [
+      albums.length,
+      artists.length,
+      likedTracks.length,
+      playlists.length,
+      tracks.length,
+    ],
   );
 
   return (

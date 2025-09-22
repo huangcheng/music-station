@@ -1,4 +1,4 @@
-export * from './music';
+export * from './track';
 
 export * from './sidebar';
 

@@ -13,7 +13,8 @@ import Library from './library';
 import Playlists from './playlists';
 import Albums from './albums';
 import Artists from './artists';
-import Liked from './liked';
+import Favorites from './favorites';
+import Tracks from './tracks';
 import Settings from './settings';
 import Placeholder from './placeholder';
 
@@ -40,8 +41,11 @@ export default function Main(): ReactElement {
       case 'artists': {
         return <Artists />;
       }
-      case 'liked': {
-        return <Liked />;
+      case 'favorites': {
+        return <Favorites />;
+      }
+      case 'tracks': {
+        return <Tracks />;
       }
       case 'settings': {
         return <Settings />;

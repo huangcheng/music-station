@@ -31,6 +31,19 @@ export default function Home(): ReactElement {
     [tracks],
   );
 
+  const greeting = useMemo(() => {
+    const hour = new Date().getHours();
+    if (hour < 12) {
+      return 'Good Morning';
+    }
+
+    if (hour < 18) {
+      return 'Good Afternoon';
+    }
+
+    return 'Good Evening';
+  }, []);
+
   const trendingTracks = useMemo(
     () => tracks.sort((a, b) => (b.id ?? 0) - (a.id ?? 0)).slice(0, 10),
     [tracks],
@@ -41,7 +54,7 @@ export default function Home(): ReactElement {
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-3xl font-bold mb-2 text-orange-600">
-              {t('Good afternoon')}
+              {t(greeting)}
             </h2>
             <p className="text-lg text-gray-600">
               {t('Ready to discover your next favorite song?')}

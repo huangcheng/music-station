@@ -16,7 +16,7 @@ import { playerMachine } from '@/machines';
 import { Sidebar, Main, Controls, MainContextProvider } from './_components';
 
 import type { MainContextProps } from './_components';
-import { useUpdatePlaylistMutation } from '@/hooks';
+import { useUpdatePlaylistMutation, useUpdateTrackMutation } from '@/hooks';
 
 export default function Home(): ReactElement {
   const root = useRef<HTMLDivElement | null>(null);
@@ -45,7 +45,16 @@ export default function Home(): ReactElement {
 
   const _tracks = useMemo(() => playlist?.tracks ?? [], [playlist]);
 
-  const { mutate, isSuccess } = useUpdatePlaylistMutation();
+  const { mutate: updatePlaylist } = useUpdatePlaylistMutation({
+    onSuccess: async () => {
+      await fetch();
+    },
+  });
+  const { mutate: updateTrack } = useUpdateTrackMutation({
+    onSuccess: async () => {
+      await fetch();
+    },
+  });
 
   const [playerStateValue, setPlayerStateValue] =
     useLocalStorage('states/player');
@@ -78,7 +87,7 @@ export default function Home(): ReactElement {
         tracks: [track],
       });
 
-      mutate({
+      updatePlaylist({
         id: defaultPlaylist?.id,
         params: {
           tracks: [id],
@@ -94,15 +103,22 @@ export default function Home(): ReactElement {
         type: 'PLAY',
       });
     },
-    [tracks, defaultPlaylist?.id, send, mutate],
+    [tracks, defaultPlaylist?.id, send, updatePlaylist],
+  );
+
+  const handleFavoriteToggle = useCallback(
+    (id: number, favorite: boolean): void =>
+      updateTrack({ id, params: { favorite } }),
+    [updateTrack],
   );
 
   const mainContext = useMemo<MainContextProps>(
     () => ({
       playerContext: context,
       onPlay: handlePlay,
+      onFavoriteToggle: handleFavoriteToggle,
     }),
-    [context, handlePlay],
+    [context, handlePlay, handleFavoriteToggle],
   );
 
   useEffect(() => {
@@ -169,10 +185,6 @@ export default function Home(): ReactElement {
       audio.current.currentTime = time;
     }
   });
-
-  useEffect(() => {
-    void fetch();
-  }, [isSuccess, fetch]);
 
   return (
     <div className="h-screen flex flex-col bg-background">

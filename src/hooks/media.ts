@@ -6,7 +6,9 @@ import type { UseMutationOptions } from '@tanstack/react-query';
 import type {
   CreatePlaylistRequest,
   Playlist,
+  Track,
   UpdatePlaylistRequest,
+  UpdateTrackRequest,
 } from '@/types';
 
 import {
@@ -15,6 +17,7 @@ import {
   fetchTracks$,
   fetchPlaylists$,
   updatePlaylist$,
+  updateTrack$,
 } from './api';
 
 export const useTracksQuery = () =>
@@ -65,5 +68,26 @@ export const useUpdatePlaylistMutation = (
       id: number;
       params: UpdatePlaylistRequest;
     }) => await lastValueFrom(updatePlaylist$(id, params)),
+    ...options,
+  });
+
+export const useUpdateTrackMutation = (
+  options?: Omit<
+    UseMutationOptions<
+      Track,
+      Error,
+      { id: number; params: UpdateTrackRequest }
+    >,
+    'mutationFn'
+  >,
+) =>
+  useMutation({
+    mutationFn: async ({
+      id,
+      params,
+    }: {
+      id: number;
+      params: UpdateTrackRequest;
+    }) => await lastValueFrom(updateTrack$(id, params)),
     ...options,
   });

@@ -12,7 +12,7 @@ import { convertToMS } from '@/lib';
 
 import Placeholder from './placeholder';
 
-export default function Liked(): ReactElement {
+export default function Favorites(): ReactElement {
   const t = useTranslations();
   const { tracks } = useMediaStore(useShallow(({ tracks }) => ({ tracks })));
 
@@ -28,7 +28,7 @@ export default function Liked(): ReactElement {
           <Heart className="h-8 w-8 text-white fill-white" />
         </div>
         <div>
-          <h2 className="text-2xl font-bold">{t('Liked Songs')}</h2>
+          <h2 className="text-2xl font-bold">{t('Favorite Songs')}</h2>
           <p className="text-muted-foreground">
             {likedTracks.length} {t('songs')}
           </p>
