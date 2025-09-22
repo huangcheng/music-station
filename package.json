@@ -48,7 +48,7 @@
     "next-intl": "^4.3.9",
     "observable-hooks": "^4.2.4",
     "pino": "^9.11.0",
-    "react": "19.1.0",
+    "react": "19.1.1",
     "react-dom": "19.1.0",
     "react-hook-form": "^7.63.0",
     "react-use": "^17.6.0",
