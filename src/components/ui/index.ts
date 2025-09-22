@@ -17,3 +17,5 @@ export * from './badge';
 export * from './input';
 
 export * from './scroll-area';
+
+export * from './tooltip';

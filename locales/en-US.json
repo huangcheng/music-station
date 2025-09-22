@@ -102,5 +102,13 @@
   "Version": "Version",
   "Build": "Build",
   "Check for Updates": "Check for Updates",
-  "Terms of Service": "Terms of Service"
+  "Terms of Service": "Terms of Service",
+  "Used by Stores": "Used by Stores",
+  "Used by States": "Used by States",
+  "Are you absolutely sure?": "Are you absolutely sure?",
+  "This action cannot be undone - This will permanently delete your settings and media data": "This action cannot be undone. This will permanently delete your settings and media data.",
+  "Cancel": "Cancel",
+  "Confirm": "Confirm",
+  "stores-description": "Persistent storage for application data, such as user settings and preferences.",
+  "states-description": "Persistent storage for the application's internal state to restore sessions."
 }

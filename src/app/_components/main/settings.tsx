@@ -1,5 +1,9 @@
+import { useEffect, useCallback, useMemo } from 'react';
 import { useTranslations } from 'next-intl';
-
+import { useShallow } from 'zustand/react/shallow';
+import { useForm, Controller, useWatch } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useCookie, useLocalStorage } from 'react-use';
 import {
   Bell,
   Download,
@@ -9,8 +13,13 @@ import {
   Play,
   Shield,
   Volume2,
+  HelpCircle,
 } from 'lucide-react';
 
+import type { ReactElement } from 'react';
+
+import { useSettingsStore } from '@/stores';
+import { settingsSchema } from '@/schemas';
 import {
   Card,
   CardContent,
@@ -24,10 +33,96 @@ import {
   SelectItem,
   Switch,
   Slider,
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+  DialogClose,
+  DialogTrigger,
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
 } from '@/components';
+import { formatBytes } from '@/lib';
 
-export default function Settings() {
+export default function Settings(): ReactElement {
   const t = useTranslations();
+
+  const { settings, setSettings } = useSettingsStore(
+    useShallow(({ settings, setSettings }) => ({ settings, setSettings })),
+  );
+
+  const { control, handleSubmit } = useForm({
+    resolver: zodResolver(settingsSchema),
+    defaultValues: {
+      ...settings,
+    },
+  });
+
+  const [locale] = useWatch({
+    control,
+    name: ['locale'],
+  });
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [_, setLocale] = useCookie('locale');
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [mediaStore, _1, clearMediaStore] = useLocalStorage<string>(
+    'media-storage',
+    '',
+    { raw: true },
+  );
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [settingsStore, _2, clearSettingsStore] = useLocalStorage<string>(
+    'settings-storage',
+    '',
+    { raw: true },
+  );
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [playerStateStore, _3, clearPlayerState] = useLocalStorage<string>(
+    'states/player',
+    '',
+    { raw: true },
+  );
+
+  const storeSize = useMemo(
+    () => (mediaStore?.length ?? 0) + (settingsStore?.length ?? 0),
+    [mediaStore, settingsStore],
+  );
+  const stateSize = useMemo(
+    () => playerStateStore?.length ?? 0,
+    [playerStateStore],
+  );
+  const totalSize = useMemo(
+    () => storeSize + stateSize,
+    [storeSize, stateSize],
+  );
+
+  const handleClearCache = useCallback(() => {
+    clearMediaStore();
+    clearSettingsStore();
+    clearPlayerState();
+  }, [clearMediaStore, clearSettingsStore, clearPlayerState]);
+
+  const submit = useCallback(
+    async () =>
+      await handleSubmit((value) => {
+        setSettings(value);
+      })(),
+    [handleSubmit, setSettings],
+  );
+
+  useEffect(() => {
+    if (locale) {
+      setLocale(locale);
+    }
+  }, [locale, setLocale]);
 
   return (
     <div className="space-y-8">
@@ -62,23 +157,36 @@ export default function Settings() {
                   {t('Choose your preferred language')}
                 </p>
               </div>
-              <Select defaultValue="en">
-                <SelectTrigger className="w-48 bg-white border-gray-200 focus:border-orange-300">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="en-US">English</SelectItem>
-                  <SelectItem value="zh-CN">中文 (Chinese)</SelectItem>
-                  {/*<SelectItem value="es">Español (Spanish)</SelectItem>*/}
-                  {/*<SelectItem value="fr">Français (French)</SelectItem>*/}
-                  {/*<SelectItem value="de">Deutsch (German)</SelectItem>*/}
-                  {/*<SelectItem value="ja">日本語 (Japanese)</SelectItem>*/}
-                  {/*<SelectItem value="ko">한국어 (Korean)</SelectItem>*/}
-                  {/*<SelectItem value="pt">Português (Portuguese)</SelectItem>*/}
-                  {/*<SelectItem value="ru">Русский (Russian)</SelectItem>*/}
-                  {/*<SelectItem value="ar">العربية (Arabic)</SelectItem>*/}
-                </SelectContent>
-              </Select>
+              <Controller
+                name="locale"
+                control={control}
+                render={({ field: { onChange, value } }) => (
+                  <Select
+                    value={value}
+                    onValueChange={(value) => {
+                      onChange(value);
+
+                      void submit();
+                    }}
+                  >
+                    <SelectTrigger className="w-48 bg-white border-gray-200 focus:border-orange-300">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="en-US">English</SelectItem>
+                      <SelectItem value="zh-CN">中文 (Chinese)</SelectItem>
+                      {/*<SelectItem value="es">Español (Spanish)</SelectItem>*/}
+                      {/*<SelectItem value="fr">Français (French)</SelectItem>*/}
+                      {/*<SelectItem value="de">Deutsch (German)</SelectItem>*/}
+                      {/*<SelectItem value="ja">日本語 (Japanese)</SelectItem>*/}
+                      {/*<SelectItem value="ko">한국어 (Korean)</SelectItem>*/}
+                      {/*<SelectItem value="pt">Português (Portuguese)</SelectItem>*/}
+                      {/*<SelectItem value="ru">Русский (Russian)</SelectItem>*/}
+                      {/*<SelectItem value="ar">العربية (Arabic)</SelectItem>*/}
+                    </SelectContent>
+                  </Select>
+                )}
+              />
             </div>
             {/*<div className="flex items-center justify-between">*/}
             {/*  <div>*/}
@@ -266,57 +374,76 @@ export default function Settings() {
           </CardHeader>
           <CardContent className="space-y-6">
             <div className="flex items-center justify-between">
-              <div>
+              <div className="flex items-center gap-2">
                 <label className="font-medium text-gray-700">
-                  {t('Data Saver Mode')}
+                  {t('Used by Stores')}
                 </label>
-                <p className="text-sm text-gray-500">
-                  {t('Reduce data usage on mobile')}
-                </p>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger>
+                      <HelpCircle className="h-4 w-4 text-gray-400" />
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>{t('stores-description')}</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
               </div>
-              <Switch className="data-[state=checked]:bg-orange-500" />
+              <p className="text-sm text-gray-500">{formatBytes(storeSize)}</p>
             </div>
             <div className="flex items-center justify-between">
-              <div>
+              <div className="flex items-center gap-2">
                 <label className="font-medium text-gray-700">
-                  {t('Download via Cellular')}
+                  {t('Used by States')}
                 </label>
-                <p className="text-sm text-gray-500">
-                  {t('Allow downloads on mobile data')}
-                </p>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger>
+                      <HelpCircle className="h-4 w-4 text-gray-400" />
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>{t('states-description')}</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
               </div>
-              <Switch className="data-[state=checked]:bg-orange-500" />
+              <p className="text-sm text-gray-500">{formatBytes(stateSize)}</p>
             </div>
             <div className="flex items-center justify-between">
-              <div>
-                <label className="font-medium text-gray-700">
-                  {t('Cache Size')}
-                </label>
-                <p className="text-sm text-gray-500">
-                  {t('Storage for temporary files')}
-                </p>
-              </div>
-              <Select defaultValue="1gb">
-                <SelectTrigger className="w-48 bg-white border-gray-200 focus:border-orange-300">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="500mb">{t('500 MB')}</SelectItem>
-                  <SelectItem value="1gb">{t('1 GB')}</SelectItem>
-                  <SelectItem value="2gb">{t('2 GB')}</SelectItem>
-                  <SelectItem value="5gb">{t('5 GB')}</SelectItem>
-                  <SelectItem value="unlimited">{t('Unlimited')}</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="pt-2">
-              <Button
-                variant="outline"
-                className="border-orange-200 text-orange-600 hover:bg-orange-50 bg-transparent"
-              >
-                <Download className="h-4 w-4 mr-2" />
-                {t('Clear Cache')} (1.2 GB)
-              </Button>
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className="border-orange-200 text-orange-600 hover:bg-orange-50 bg-transparent hover:text-orange-700"
+                  >
+                    <Download className="h-4 w-4 mr-2" />
+                    {t('Clear Cache')} ({formatBytes(totalSize)})
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>{t('Are you absolutely sure?')}</DialogTitle>
+                    <DialogDescription>
+                      {t(
+                        'This action cannot be undone - This will permanently delete your settings and media data',
+                      )}
+                    </DialogDescription>
+                  </DialogHeader>
+                  <DialogFooter>
+                    <DialogClose asChild>
+                      <Button variant="ghost">{t('Cancel')}</Button>
+                    </DialogClose>
+                    <DialogClose asChild>
+                      <Button
+                        variant="destructive"
+                        onClick={() => handleClearCache()}
+                      >
+                        {t('Confirm')}
+                      </Button>
+                    </DialogClose>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
             </div>
           </CardContent>
         </Card>

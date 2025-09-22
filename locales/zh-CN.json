@@ -102,5 +102,13 @@
   "Version": "版本",
   "Build": "构建",
   "Check for Updates": "检查更新",
-  "Terms of Service": "服务条款"
+  "Terms of Service": "服务条款",
+  "Used by Stores": "商店已用空间",
+  "Used by States": "状态已用空间",
+  "Are you absolutely sure?": "你确定要这么做吗？",
+  "This action cannot be undone - This will permanently delete your settings and media data": "此操作无法撤销。这将永久删除您的设置和媒体数据。",
+  "Cancel": "取消",
+  "Confirm": "确认",
+  "stores-description": "用于存储应用程序数据的持久化空间，例如用户设置和偏好。",
+  "states-description": "用于存储应用程序内部状态的持久化空间，以便恢复会话。"
 }
