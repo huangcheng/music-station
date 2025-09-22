@@ -17,8 +17,7 @@ function Slider({
     () =>
       Array.isArray(value)
         ? value
-        : // eslint-disable-next-line unicorn/no-nested-ternary
-          Array.isArray(defaultValue)
+        : Array.isArray(defaultValue)
           ? defaultValue
           : [min, max],
     [value, defaultValue, min, max],

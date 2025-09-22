@@ -8,6 +8,10 @@ export * from './progress';
 
 export * from './slider';
 
+export * from './switch';
+
+export * from './select';
+
 export * from './badge';
 
 export * from './input';

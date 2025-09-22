@@ -7,3 +7,9 @@ gqwwm
 Crossfade
 Gapless
 partialize
+Español
+Français
+Deutsch
+Português
+Русский
+العربية

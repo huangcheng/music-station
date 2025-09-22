@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { Search as SearchIcon, Filter } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 import type { ReactElement } from 'react';
 
@@ -11,6 +12,7 @@ import { getRandomGradientColor } from '@/lib';
 import Placeholder from './placeholder';
 
 export default function Search(): ReactElement {
+  const t = useTranslations();
   const { genre } = useMediaStore(useShallow(({ genre }) => ({ genre })));
 
   const _genre = useMemo(
@@ -25,12 +27,12 @@ export default function Search(): ReactElement {
   return (
     <div className="space-y-6">
       <div className="space-y-4">
-        <h2 className="text-3xl font-bold text-orange-600">Search</h2>
+        <h2 className="text-3xl font-bold text-orange-600">{t('Search')}</h2>
         <div className="flex gap-4">
           <div className="relative flex-1">
             <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
             <Input
-              placeholder="What do you want to listen to?"
+              placeholder={t('What do you want to listen to?')}
               className="pl-10 h-12 text-lg bg-white music-shadow-soft border-gray-200 focus:border-orange-300 focus:ring-orange-200"
             />
           </div>
@@ -39,13 +41,15 @@ export default function Search(): ReactElement {
             className="h-12 px-6 bg-white border-orange-200 text-orange-600 hover:bg-orange-50"
           >
             <Filter className="h-4 w-4 mr-2" />
-            Filter
+            {t('Filter')}
           </Button>
         </div>
       </div>
 
       <div>
-        <h3 className="text-xl font-bold mb-4 text-gray-800">Browse all</h3>
+        <h3 className="text-xl font-bold mb-4 text-gray-800">
+          {t('Browse all')}
+        </h3>
         {genre.length > 0 ? (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             {_genre.map(({ id, name, color }) => (

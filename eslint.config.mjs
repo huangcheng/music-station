@@ -47,6 +47,7 @@ const eslintConfig = [
       'unicorn/prevent-abbreviations': 'off',
       'unicorn/no-null': 'off',
       'unicorn/no-array-reduce': 'off',
+      'unicorn/no-nested-ternary': 'off',
     },
   }),
 ];

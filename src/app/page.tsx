@@ -65,8 +65,6 @@ export default function Home(): ReactElement {
 
   const { track, loop, volume, time } = context ?? {};
 
-  console.log('context', context);
-
   const handlePlay = useCallback(
     (id: number) => {
       const track = tracks.find((t) => t.id === id);

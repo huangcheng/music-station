@@ -72,8 +72,12 @@ export default function Sidebar({
     >
       {/* Logo/Brand */}
       <div className="p-6 border-b border-gray-100">
-        <h1 className="text-2xl font-bold text-orange-600">Music Station</h1>
-        <p className="text-sm text-gray-600 mt-1">Your music, your way</p>
+        <h1 className="text-2xl font-bold text-orange-600">
+          {t('Music Station')}
+        </h1>
+        <p className="text-sm text-gray-600 mt-1">
+          {t('Your music, your way')}
+        </p>
       </div>
 
       <ScrollArea className="flex-1 px-4 py-6">

@@ -1,9 +1,12 @@
 'use client';
 
+import { useCallback } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 
+import type { ReactElement } from 'react';
+
 import { useGlobalStore } from '@/providers';
-// Import extracted components
+
 import Home from './home';
 import Search from './search';
 import Library from './library';
@@ -14,57 +17,13 @@ import Liked from './liked';
 import Settings from './settings';
 import Placeholder from './placeholder';
 
-interface Track {
-  id: string;
-  title: string;
-  artist: string;
-  album: string;
-  duration: string;
-  cover: string;
-}
-
-export default function Main() {
+export default function Main(): ReactElement {
   const { nav } = useGlobalStore(useShallow(({ nav }) => ({ nav })));
 
-  const sampleTracks: Track[] = [
-    {
-      id: '1',
-      title: 'Bohemian Rhapsody',
-      artist: 'Queen',
-      album: 'A Night at the Opera',
-      duration: '5:55',
-      cover: '/queen-bohemian-rhapsody-album-cover.png',
-    },
-    {
-      id: '2',
-      title: 'Hotel California',
-      artist: 'Eagles',
-      album: 'Hotel California',
-      duration: '6:30',
-      cover: '/eagles-hotel-california-album-cover.jpg',
-    },
-    {
-      id: '3',
-      title: 'Stairway to Heaven',
-      artist: 'Led Zeppelin',
-      album: 'Led Zeppelin IV',
-      duration: '8:02',
-      cover: '/led-zeppelin-iv-inspired-cover.png',
-    },
-    {
-      id: '4',
-      title: "Sweet Child O' Mine",
-      artist: "Guns N' Roses",
-      album: 'Appetite for Destruction',
-      duration: '5:03',
-      cover: '/guns-roses-appetite-destruction-album.jpg',
-    },
-  ];
-
-  const renderContent = () => {
+  const Content = useCallback((): ReactElement => {
     switch (nav) {
       case 'home': {
-        return <Home tracks={sampleTracks} />;
+        return <Home />;
       }
       case 'search': {
         return <Search />;
@@ -76,13 +35,13 @@ export default function Main() {
         return <Playlists />;
       }
       case 'albums': {
-        return <Albums tracks={sampleTracks} />;
+        return <Albums />;
       }
       case 'artists': {
-        return <Artists tracks={sampleTracks} />;
+        return <Artists />;
       }
       case 'liked': {
-        return <Liked tracks={sampleTracks} />;
+        return <Liked />;
       }
       case 'settings': {
         return <Settings />;
@@ -91,9 +50,11 @@ export default function Main() {
         return <Placeholder />;
       }
     }
-  };
+  }, [nav]);
 
   return (
-    <div className="flex-1 p-8 overflow-auto bg-gray-50">{renderContent()}</div>
+    <div className="flex-1 p-8 overflow-auto bg-gray-50">
+      <Content />
+    </div>
   );
 }

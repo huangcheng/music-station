@@ -18,6 +18,7 @@ import {
   Mic2,
   Repeat1,
 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 import type { ReactElement } from 'react';
 
@@ -64,6 +65,8 @@ export default function Controls({
   const { cover, duration, name, artist, favorite, sampleRate, codec } =
     track || {};
 
+  const t = useTranslations();
+
   const _progress =
     (duration ?? 0) > 0 ? ((time ?? 0) / (duration ?? 0)) * 100 : 0;
 
@@ -94,7 +97,7 @@ export default function Controls({
           <div className="relative group">
             <Image
               src={cover ?? '/images/abstract-geometric-shapes.png'}
-              alt={name ?? 'No Track'}
+              alt={name ?? t('No Track')}
               width={64}
               height={64}
               className="rounded-lg object-cover shadow-lg transition-transform group-hover:scale-105"
@@ -114,7 +117,7 @@ export default function Controls({
             <div className="flex items-center gap-2 mt-1">
               <Badge variant="outline" className="text-xs">
                 {/*HD*/}
-                {codec?.toUpperCase() ?? 'N/A'}
+                {codec?.toUpperCase() ?? t('N/A')}
               </Badge>
               <Badge variant="outline" className="text-xs">
                 {formatSampleRate(sampleRate ?? 0)}

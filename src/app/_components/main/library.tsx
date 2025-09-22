@@ -1,5 +1,6 @@
 import Image from 'next/image';
 import { useShallow } from 'zustand/react/shallow';
+import { useTranslations } from 'next-intl';
 
 import { useMediaStore } from '@/stores';
 import { Card, CardContent } from '@/components';
@@ -7,6 +8,7 @@ import { Card, CardContent } from '@/components';
 import Placeholder from './placeholder';
 
 export default function Library() {
+  const t = useTranslations();
   const { playlists } = useMediaStore(
     useShallow(({ playlists }) => ({
       playlists,
@@ -14,7 +16,7 @@ export default function Library() {
   );
   return (
     <div className="space-y-6">
-      <h2 className="text-2xl font-bold">Your Playlists</h2>
+      <h2 className="text-2xl font-bold">{t('Your Playlists')}</h2>
       {playlists.length > 0 ? (
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
           {playlists.map(({ id, name, tracks }) => (
@@ -37,7 +39,7 @@ export default function Library() {
                 </div>
                 <h3 className="font-semibold truncate">{name}</h3>
                 <p className="text-sm text-muted-foreground">
-                  {name} • {tracks.length} songs
+                  {name} • {tracks.length} {t('songs')}
                 </p>
               </CardContent>
             </Card>

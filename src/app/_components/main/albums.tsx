@@ -3,6 +3,7 @@
 import Image from 'next/image';
 import { useShallow } from 'zustand/react/shallow';
 import { Heart, MoreHorizontal } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 import type { ReactElement } from 'react';
 
@@ -11,6 +12,7 @@ import { Button } from '@/components';
 import Placeholder from './placeholder';
 
 export default function Albums(): ReactElement {
+  const t = useTranslations();
   const { albums = [] } = useMediaStore(
     useShallow(({ albums }) => ({
       albums,
@@ -19,7 +21,7 @@ export default function Albums(): ReactElement {
 
   return (
     <div className="space-y-6">
-      <h2 className="text-2xl font-bold">Albums</h2>
+      <h2 className="text-2xl font-bold">{t('Albums')}</h2>
       {albums.length > 0 ? (
         <div className="space-y-2">
           {albums.map(({ id, name, tracks = [] }) => (

@@ -2,6 +2,7 @@ import { useContext, useMemo } from 'react';
 import Image from 'next/image';
 import { useShallow } from 'zustand/react/shallow';
 import { Play, Heart, Clock, TrendingUp, Star } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 import type { ReactElement } from 'react';
 
@@ -14,6 +15,7 @@ import MainContext from './context';
 import type { MainContextProps } from './context';
 
 export default function Home(): ReactElement {
+  const t = useTranslations();
   const { tracks } = useMediaStore(useShallow(({ tracks }) => ({ tracks })));
 
   const { onPlay } = useContext<MainContextProps>(MainContext);
@@ -37,23 +39,23 @@ export default function Home(): ReactElement {
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-3xl font-bold mb-2 text-orange-600">
-              Good afternoon
+              {t('Good afternoon')}
             </h2>
             <p className="text-lg text-gray-600">
-              Ready to discover your next favorite song?
+              {t('Ready to discover your next favorite song?')}
             </p>
           </div>
           <div className="flex gap-3">
             <Button className="bg-orange-500 hover:bg-orange-600 text-white music-shadow-soft">
               <Play className="h-4 w-4 mr-2" />
-              Surprise Me
+              {t('Surprise Me')}
             </Button>
             <Button
               variant="outline"
               className="border-orange-200 text-orange-600 hover:bg-orange-50 bg-transparent"
             >
               <Heart className="h-4 w-4 mr-2" />
-              My Mix
+              {t('My Mix')}
             </Button>
           </div>
         </div>
@@ -63,7 +65,7 @@ export default function Home(): ReactElement {
         <div>
           <h3 className="text-xl font-bold mb-4 flex items-center gap-2 text-gray-800">
             <Clock className="h-5 w-5 text-orange-500" />
-            Recently Played
+            {t('Recently Played')}
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {recentlyPlayedTracks.map(
@@ -121,7 +123,7 @@ export default function Home(): ReactElement {
       <div>
         <h3 className="text-xl font-bold mb-4 flex items-center gap-2 text-gray-800">
           <TrendingUp className="h-5 w-5 text-orange-500" />
-          Trending Now
+          {t('Trending Now')}
         </h3>
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
           {trendingTracks.map(({ id, cover, name, artist }, index) => (

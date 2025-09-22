@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import Image from 'next/image';
 import { useShallow } from 'zustand/react/shallow';
 import { Heart, MoreHorizontal } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 import type { ReactElement } from 'react';
 
@@ -12,10 +13,11 @@ import { convertToMS } from '@/lib';
 import Placeholder from './placeholder';
 
 export default function Liked(): ReactElement {
+  const t = useTranslations();
   const { tracks } = useMediaStore(useShallow(({ tracks }) => ({ tracks })));
 
   const likedTracks = useMemo(
-    () => tracks.filter((track) => track.favorite === true) ?? [],
+    () => tracks.filter(({ favorite }) => favorite === true) ?? [],
     [tracks],
   );
 
@@ -26,8 +28,10 @@ export default function Liked(): ReactElement {
           <Heart className="h-8 w-8 text-white fill-white" />
         </div>
         <div>
-          <h2 className="text-2xl font-bold">Liked Songs</h2>
-          <p className="text-muted-foreground">{likedTracks.length} songs</p>
+          <h2 className="text-2xl font-bold">{t('Liked Songs')}</h2>
+          <p className="text-muted-foreground">
+            {likedTracks.length} {t('songs')}
+          </p>
         </div>
       </div>
       {likedTracks.length > 0 ? (
