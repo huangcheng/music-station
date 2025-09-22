@@ -14,6 +14,8 @@ import MainContext from './context';
 
 import type { MainContextProps } from './context';
 
+import Placeholder from './placeholder';
+
 export default function Home(): ReactElement {
   const t = useTranslations();
   const { tracks } = useMediaStore(useShallow(({ tracks }) => ({ tracks })));
@@ -120,47 +122,53 @@ export default function Home(): ReactElement {
         </div>
       )}
 
-      <div>
-        <h3 className="text-xl font-bold mb-4 flex items-center gap-2 text-gray-800">
-          <TrendingUp className="h-5 w-5 text-orange-500" />
-          {t('Trending Now')}
-        </h3>
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-          {trendingTracks.map(({ id, cover, name, artist }, index) => (
-            <Card
-              key={id}
-              className="group music-card-hover cursor-pointer bg-white music-shadow-soft hover:music-shadow-medium"
-            >
-              <CardContent className="p-4 text-center">
-                <div className="relative mb-3">
-                  <Image
-                    src={cover || '/placeholder.svg'}
-                    alt={name}
-                    width={200}
-                    height={200}
-                    className="rounded-lg object-cover shadow-md aspect-2/3"
-                  />
-                  <Badge className="absolute -top-2 -right-2 bg-orange-500 text-white">
-                    #{index + 1}
-                  </Badge>
-                  <div className="absolute inset-0 bg-black/20 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                    <button
-                      className="bg-accent hover:bg-accent/90 text-accent-foreground w-12 h-12 rounded-full shadow-lg music-glow transition-all duration-200 hover:scale-110 flex items-center justify-center"
-                      onClick={() => onPlay?.(id)}
-                    >
-                      <Play className="h-6 w-6 text-white" />
-                    </button>
+      {trendingTracks.length > 0 && (
+        <div>
+          <h3 className="text-xl font-bold mb-4 flex items-center gap-2 text-gray-800">
+            <TrendingUp className="h-5 w-5 text-orange-500" />
+            {t('Trending Now')}
+          </h3>
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+            {trendingTracks.map(({ id, cover, name, artist }, index) => (
+              <Card
+                key={id}
+                className="group music-card-hover cursor-pointer bg-white music-shadow-soft hover:music-shadow-medium"
+              >
+                <CardContent className="p-4 text-center">
+                  <div className="relative mb-3">
+                    <Image
+                      src={cover || '/placeholder.svg'}
+                      alt={name}
+                      width={200}
+                      height={200}
+                      className="rounded-lg object-cover shadow-md aspect-2/3"
+                    />
+                    <Badge className="absolute -top-2 -right-2 bg-orange-500 text-white">
+                      #{index + 1}
+                    </Badge>
+                    <div className="absolute inset-0 bg-black/20 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                      <button
+                        className="bg-accent hover:bg-accent/90 text-accent-foreground w-12 h-12 rounded-full shadow-lg music-glow transition-all duration-200 hover:scale-110 flex items-center justify-center"
+                        onClick={() => onPlay?.(id)}
+                      >
+                        <Play className="h-6 w-6 text-white" />
+                      </button>
+                    </div>
                   </div>
-                </div>
-                <h4 className="font-medium text-sm truncate text-gray-800">
-                  {name}
-                </h4>
-                <p className="text-xs text-gray-600 truncate">{artist}</p>
-              </CardContent>
-            </Card>
-          ))}
+                  <h4 className="font-medium text-sm truncate text-gray-800">
+                    {name}
+                  </h4>
+                  <p className="text-xs text-gray-600 truncate">{artist}</p>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
+
+      {trendingTracks.length === 0 && recentlyPlayedTracks.length === 0 && (
+        <Placeholder />
+      )}
     </div>
   );
 }

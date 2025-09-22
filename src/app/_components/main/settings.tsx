@@ -46,7 +46,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components';
-import { formatBytes } from '@/lib';
+import { formatBytes, getStrSize } from '@/lib';
 
 export default function Settings(): ReactElement {
   const t = useTranslations();
@@ -85,20 +85,17 @@ export default function Settings(): ReactElement {
   );
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [playerStateStore, _3, clearPlayerState] = useLocalStorage<string>(
+  const [playerState, _3, clearPlayerState] = useLocalStorage<string>(
     'states/player',
     '',
     { raw: true },
   );
 
   const storeSize = useMemo(
-    () => (mediaStore?.length ?? 0) + (settingsStore?.length ?? 0),
+    () => getStrSize(mediaStore ?? '') + getStrSize(settingsStore ?? ''),
     [mediaStore, settingsStore],
   );
-  const stateSize = useMemo(
-    () => playerStateStore?.length ?? 0,
-    [playerStateStore],
-  );
+  const stateSize = useMemo(() => getStrSize(playerState ?? ''), [playerState]);
   const totalSize = useMemo(
     () => storeSize + stateSize,
     [storeSize, stateSize],

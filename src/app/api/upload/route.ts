@@ -40,11 +40,11 @@ const getStorageLocation = (): string =>
 
 const storage = getStorageLocation();
 
-const musics = path.join(storage, 'musics');
+const tracks = path.join(storage, 'tracks');
 const covers = path.join(storage, 'covers');
 
 async function ensureUploadDir() {
-  await fs.mkdir(musics, { recursive: true });
+  await fs.mkdir(tracks, { recursive: true });
   await fs.mkdir(covers, { recursive: true });
 }
 
@@ -67,7 +67,7 @@ export async function POST(req: Request) {
               switchMap((buffer) => {
                 // const safeName = `${Date.now()}_${path.basename(file.name)}`;
                 const fileName = path.basename(file.name);
-                const filePath = path.join(musics, fileName);
+                const filePath = path.join(tracks, fileName);
                 const size = file.size;
 
                 const hash = crypto
@@ -317,7 +317,7 @@ export async function GET(request: NextRequest) {
         defer(() => {
           const isMusic = isMusicFile(file!);
 
-          const dir = isMusic ? musics : covers;
+          const dir = isMusic ? tracks : covers;
 
           const filePath = path.join(dir, path.basename(file!));
 

@@ -58,3 +58,11 @@ export const formatBytes = (bytes: number, decimals = 2): string => {
     Number.parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i]
   );
 };
+
+/**
+ * Get the size of a string in bytes.
+ * @param str - the string to measure
+ * @returns size in bytes
+ */
+export const getStrSize = (str: string | undefined): number =>
+  str ? new Blob([str]).size : 0;
