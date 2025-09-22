@@ -19,9 +19,13 @@ export async function GET() {
     map((albums) =>
       albums.map(({ tracks, ...rest }) => ({
         ...rest,
-        tracks: tracks.map((track) =>
-          omit(track, ['hash', 'albumId', 'artistId']),
-        ),
+        tracks: tracks.map((track) => ({
+          ...omit(track, ['hash', 'albumId', 'albumId']),
+          file: `/api/upload?file=${encodeURIComponent(track.file)}`,
+          cover: track.cover
+            ? `/api/upload?file=${encodeURIComponent(track.cover)}`
+            : undefined,
+        })),
       })),
     ),
     map((albums) => albums.filter(({ tracks }) => tracks.length > 0)),

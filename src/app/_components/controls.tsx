@@ -93,7 +93,7 @@ export default function Controls({
         <div className="flex items-center gap-4 min-w-0 flex-1">
           <div className="relative group">
             <Image
-              src={cover ?? '/placeholder.svg'}
+              src={cover ?? '/images/abstract-geometric-shapes.png'}
               alt={name ?? 'No Track'}
               width={64}
               height={64}
@@ -104,7 +104,12 @@ export default function Controls({
             </div>
           </div>
           <div className="min-w-0 flex-1">
-            <h4 className="font-semibold text-base truncate">{name}</h4>
+            <h4
+              suppressHydrationWarning
+              className="font-semibold text-base truncate"
+            >
+              {name}
+            </h4>
             <p className="text-sm text-muted-foreground truncate">{artist}</p>
             <div className="flex items-center gap-2 mt-1">
               <Badge variant="outline" className="text-xs">

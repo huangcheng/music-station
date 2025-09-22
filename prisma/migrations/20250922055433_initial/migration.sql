@@ -62,7 +62,8 @@ CREATE TABLE "TrackGenre" (
 -- CreateTable
 CREATE TABLE "Playlist" (
     "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-    "name" TEXT NOT NULL
+    "name" TEXT NOT NULL,
+    "internal" BOOLEAN NOT NULL DEFAULT false
 );
 
 -- CreateTable

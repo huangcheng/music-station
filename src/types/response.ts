@@ -5,6 +5,9 @@ export type Response<T> = {
 
 export type Track = {
   id: number;
+  hash?: string;
+  albumId?: number;
+  artistId?: number;
   name: string;
   artist: string;
   album?: string;
@@ -31,6 +34,7 @@ export type Track = {
 export type Artist = {
   id: number;
   name: string;
+
   tracks: Track[];
   albums: Album[];
 };
@@ -40,19 +44,21 @@ export type Album = {
   name: string;
   artist?: string;
   year?: number;
+
   tracks?: Track[];
 };
 
 export type Playlist = {
   id: number;
   name: string;
+  internal: boolean;
 
-  tracks: number[];
+  tracks: Track[];
 };
 
 export type Genre = {
   id: number;
   name: string;
 
-  tracks: number[];
+  tracks: Track[];
 };

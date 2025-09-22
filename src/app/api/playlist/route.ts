@@ -5,17 +5,19 @@ import { PrismaClient } from '@prisma/client';
 
 import type { NextRequest } from 'next/server';
 
-import type { CreatePlayListRequest } from '@/types';
+import type { CreatePlaylistRequest } from '@/types';
+import { omit } from 'es-toolkit';
 
 const prisma = new PrismaClient();
 
 export async function POST(req: NextRequest) {
-  const ob$ = from<Promise<CreatePlayListRequest>>(req.json()).pipe(
+  const ob$ = from<Promise<CreatePlaylistRequest>>(req.json()).pipe(
     switchMap(({ name, tracks }) =>
       from(
         prisma.playlist.create({
           data: {
             name,
+            internal: false,
           },
         }),
       ).pipe(
@@ -42,13 +44,21 @@ export async function POST(req: NextRequest) {
               from(
                 prisma.playlistTrack.findMany({
                   where: { playlistId: playlist.id },
+                  include: { track: true },
                 }),
               ),
             ),
-            map((records) => records.map(({ trackId }) => trackId)),
+            // map((records) => records.map(({ trackId }) => trackId)),
+            map((records) => records.map(({ track }) => track)),
             map((tracks) => ({
               ...playlist,
-              tracks,
+              tracks: tracks.map((track) => ({
+                ...omit(track, ['hash', 'albumId', 'artistId']),
+                file: `/api/upload?file=${encodeURIComponent(track.file)}`,
+                cover: track.cover
+                  ? `/api/upload?file=${encodeURIComponent(track.cover)}`
+                  : undefined,
+              })),
             })),
           ),
         ),

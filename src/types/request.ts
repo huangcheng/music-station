@@ -1,8 +1,10 @@
-export type CreatePlayListRequest = {
+export type CreatePlaylistRequest = {
   name: string;
 
   tracks: number[];
 };
+
+export type UpdatePlaylistRequest = Partial<CreatePlaylistRequest>;
 
 export type UpdateTrackRequest = {
   name?: string;

@@ -3,7 +3,11 @@ import { useMutation, useQuery } from '@tanstack/react-query';
 
 import type { UseMutationOptions } from '@tanstack/react-query';
 
-import type { CreatePlayListRequest, Playlist } from '@/types';
+import type {
+  CreatePlaylistRequest,
+  Playlist,
+  UpdatePlaylistRequest,
+} from '@/types';
 
 import {
   addToDefaultPlaylist$,
@@ -33,12 +37,12 @@ export const usePlaylistsQuery = () =>
 
 export const useAddToDefaultPlaylistMutation = (
   options?: Omit<
-    UseMutationOptions<Playlist, Error, CreatePlayListRequest>,
+    UseMutationOptions<Playlist, Error, CreatePlaylistRequest>,
     'mutationFn'
   >,
 ) =>
   useMutation({
-    mutationFn: async (params: CreatePlayListRequest) =>
+    mutationFn: async (params: CreatePlaylistRequest) =>
       await lastValueFrom(addToDefaultPlaylist$(params)),
     ...options,
   });
@@ -48,7 +52,7 @@ export const useUpdatePlaylistMutation = (
     UseMutationOptions<
       Playlist,
       Error,
-      { id: number; params: CreatePlayListRequest }
+      { id: number; params: UpdatePlaylistRequest }
     >,
     'mutationFn'
   >,
@@ -59,7 +63,7 @@ export const useUpdatePlaylistMutation = (
       params,
     }: {
       id: number;
-      params: CreatePlayListRequest;
+      params: UpdatePlaylistRequest;
     }) => await lastValueFrom(updatePlaylist$(id, params)),
     ...options,
   });

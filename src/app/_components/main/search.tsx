@@ -8,6 +8,8 @@ import { Card, CardContent, Button, Input } from '@/components';
 import { useMediaStore } from '@/stores';
 import { getRandomGradientColor } from '@/lib';
 
+import Placeholder from './placeholder';
+
 export default function Search(): ReactElement {
   const { genre } = useMediaStore(useShallow(({ genre }) => ({ genre })));
 
@@ -44,19 +46,23 @@ export default function Search(): ReactElement {
 
       <div>
         <h3 className="text-xl font-bold mb-4 text-gray-800">Browse all</h3>
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-          {_genre.map(({ id, name, color }) => (
-            <Card
-              key={id}
-              className={`aspect-square bg-gradient-to-br ${color} hover:scale-105 transition-transform cursor-pointer music-shadow-medium music-card-hover`}
-            >
-              <CardContent className="p-6 flex items-end h-full relative overflow-hidden">
-                <h3 className="text-2xl font-bold text-white z-10">{name}</h3>
-                <div className="absolute top-4 right-4 w-16 h-16 bg-white/20 rounded-full transform rotate-12"></div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+        {genre.length > 0 ? (
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            {_genre.map(({ id, name, color }) => (
+              <Card
+                key={id}
+                className={`aspect-square bg-gradient-to-br ${color} hover:scale-105 transition-transform cursor-pointer music-shadow-medium music-card-hover`}
+              >
+                <CardContent className="p-6 flex items-end h-full relative overflow-hidden">
+                  <h3 className="text-2xl font-bold text-white z-10">{name}</h3>
+                  <div className="absolute top-4 right-4 w-16 h-16 bg-white/20 rounded-full transform rotate-12"></div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        ) : (
+          <Placeholder />
+        )}
       </div>
     </div>
   );

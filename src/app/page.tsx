@@ -16,26 +16,41 @@ import { playerMachine } from '@/machines';
 import { Sidebar, Main, Controls, MainContextProvider } from './_components';
 
 import type { MainContextProps } from './_components';
+import { useUpdatePlaylistMutation } from '@/hooks';
 
 export default function Home(): ReactElement {
   const root = useRef<HTMLDivElement | null>(null);
   const scope = useRef<Scope | null>(null);
   const audio = useRef<HTMLAudioElement | null>(null);
 
-  const { fetch, tracks } = useMediaStore(
-    useShallow(({ fetch, tracks }) => ({
+  const { fetch, tracks, playlists, playlistId } = useMediaStore(
+    useShallow(({ fetch, tracks, playlists, playlistId }) => ({
       fetch,
       tracks,
+      playlists,
+      playlistId,
     })),
   );
+
+  const defaultPlaylist = useMemo(
+    () => playlists.find(({ internal }) => internal === true)!,
+    [playlists],
+  );
+
+  const playlist = useMemo(() => {
+    const target = playlists.find((p) => p.id === playlistId);
+
+    return target ?? defaultPlaylist!;
+  }, [playlists, playlistId, defaultPlaylist]);
+
+  const _tracks = useMemo(() => playlist?.tracks ?? [], [playlist]);
+
+  const { mutate, isSuccess } = useUpdatePlaylistMutation();
 
   const [playerStateValue, setPlayerStateValue] =
     useLocalStorage('states/player');
 
   const [snapshot, send] = useMachine(playerMachine, {
-    input: {
-      tracks: tracks ?? [],
-    },
     snapshot:
       Object.keys((playerStateValue as Snapshot<typeof playerMachine>) ?? {})
         .length === 0
@@ -50,8 +65,28 @@ export default function Home(): ReactElement {
 
   const { track, loop, volume, time } = context ?? {};
 
+  console.log('context', context);
+
   const handlePlay = useCallback(
     (id: number) => {
+      const track = tracks.find((t) => t.id === id);
+
+      if (!track) {
+        return;
+      }
+
+      send({
+        type: 'SET_TRACKS',
+        tracks: [track],
+      });
+
+      mutate({
+        id: defaultPlaylist?.id,
+        params: {
+          tracks: [id],
+        },
+      });
+
       send({
         type: 'SET_TRACK',
         id,
@@ -61,7 +96,7 @@ export default function Home(): ReactElement {
         type: 'PLAY',
       });
     },
-    [send],
+    [tracks, defaultPlaylist?.id, send, mutate],
   );
 
   const mainContext = useMemo<MainContextProps>(
@@ -94,14 +129,14 @@ export default function Home(): ReactElement {
     }
   }, [audio, track]);
 
-  useEffect(
-    () =>
+  useEffect(() => {
+    if (_tracks.length > 0) {
       send({
         type: 'SET_TRACKS',
-        tracks: tracks ?? [],
-      }),
-    [tracks, send],
-  );
+        tracks: _tracks ?? [],
+      });
+    }
+  }, [_tracks, send]);
 
   useEffect(() => {
     if (audio.current) {
@@ -136,6 +171,10 @@ export default function Home(): ReactElement {
       audio.current.currentTime = time;
     }
   });
+
+  useEffect(() => {
+    void fetch();
+  }, [isSuccess, fetch]);
 
   return (
     <div className="h-screen flex flex-col bg-background">

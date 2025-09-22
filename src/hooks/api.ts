@@ -12,9 +12,10 @@ import type {
   Artist,
   Album,
   Playlist,
-  CreatePlayListRequest,
+  CreatePlaylistRequest,
   UpdateTrackRequest,
   Genre,
+  UpdatePlaylistRequest,
 } from '@/types';
 
 export const fetch$ = <R>(url: string, init?: RequestInit): Observable<R> =>
@@ -45,14 +46,14 @@ export const fetchAlbums$ = () => fetch$<Album[]>('/albums');
 export const fetchPlaylists$ = () => fetch$<Playlist[]>('/playlists');
 
 export const addToDefaultPlaylist$ = (
-  params: CreatePlayListRequest,
+  params: CreatePlaylistRequest,
 ): Observable<Playlist> =>
   fetch$('/playlist', {
     method: 'POST',
     body: JSON.stringify(params),
   });
 
-export const updatePlaylist$ = (id: number, params: CreatePlayListRequest) =>
+export const updatePlaylist$ = (id: number, params: UpdatePlaylistRequest) =>
   fetch$<Playlist>(`/playlist/${id}`, {
     method: 'PUT',
     body: JSON.stringify(params),

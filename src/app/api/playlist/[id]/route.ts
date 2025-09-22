@@ -5,7 +5,7 @@ import { PrismaClient } from '@prisma/client';
 
 import type { NextRequest } from 'next/server';
 
-import type { CreatePlayListRequest } from '@/types';
+import type { CreatePlaylistRequest } from '@/types';
 
 const prisma = new PrismaClient();
 
@@ -15,11 +15,11 @@ export async function PUT(
 ) {
   const ob$ = forkJoin({
     id: from(ctx.params).pipe(map(({ id }) => Number(id))),
-    body: from<Promise<CreatePlayListRequest>>(
-      req.json() as Promise<CreatePlayListRequest>,
+    body: from<Promise<CreatePlaylistRequest>>(
+      req.json() as Promise<CreatePlaylistRequest>,
     ),
   }).pipe(
-    switchMap(({ id, body: { name, music } }) =>
+    switchMap(({ id, body: { name, tracks } }) =>
       from(
         prisma.playlist.findFirst({
           where: { id },
@@ -30,18 +30,18 @@ export async function PUT(
             () => record !== null,
             defer(() =>
               from(
-                prisma.playlistMusic.deleteMany({
+                prisma.playlistTrack.deleteMany({
                   where: { playlistId: id },
                 }),
               ).pipe(
                 switchMap(() =>
                   forkJoin(
-                    music.map((m) =>
+                    tracks.map((trackId) =>
                       from(
-                        prisma.playlistMusic.create({
+                        prisma.playlistTrack.create({
                           data: {
                             playlistId: id,
-                            musicId: m,
+                            trackId,
                           },
                         }),
                       ),

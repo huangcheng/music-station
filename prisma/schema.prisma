@@ -15,7 +15,7 @@ model Genre {
   id   Int    @id @default(autoincrement())
   name String @unique
 
-  music TrackGenre[]
+  tracks TrackGenre[]
 }
 
 model Album {
@@ -80,8 +80,9 @@ model TrackGenre {
 }
 
 model Playlist {
-  id   Int    @id @default(autoincrement())
-  name String
+  id       Int     @id @default(autoincrement())
+  name     String
+  internal Boolean @default(false)
 
   tracks PlaylistTrack[]
 }

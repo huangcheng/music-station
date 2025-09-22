@@ -1,21 +1,24 @@
+import { useMemo } from 'react';
 import Image from 'next/image';
+import { useShallow } from 'zustand/react/shallow';
 import { Heart, MoreHorizontal } from 'lucide-react';
+
+import type { ReactElement } from 'react';
+
+import { useMediaStore } from '@/stores';
 import { Button } from '@/components';
+import { convertToMS } from '@/lib';
 
-interface Track {
-  id: string;
-  title: string;
-  artist: string;
-  album: string;
-  duration: string;
-  cover: string;
-}
+import Placeholder from './placeholder';
 
-interface Props {
-  tracks: Track[];
-}
+export default function Liked(): ReactElement {
+  const { tracks } = useMediaStore(useShallow(({ tracks }) => ({ tracks })));
 
-export default function Liked({ tracks }: Props) {
+  const likedTracks = useMemo(
+    () => tracks.filter((track) => track.favorite === true) ?? [],
+    [tracks],
+  );
+
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-4">
@@ -24,45 +27,49 @@ export default function Liked({ tracks }: Props) {
         </div>
         <div>
           <h2 className="text-2xl font-bold">Liked Songs</h2>
-          <p className="text-muted-foreground">{tracks.length} songs</p>
+          <p className="text-muted-foreground">{likedTracks.length} songs</p>
         </div>
       </div>
-      <div className="space-y-1">
-        {tracks.map((track, index) => (
-          <div
-            key={track.id}
-            className="flex items-center gap-4 p-3 rounded hover:bg-muted/50 group"
-          >
-            <span className="w-4 text-sm text-muted-foreground">
-              {index + 1}
-            </span>
-            <Image
-              src={track.cover || '/placeholder.svg'}
-              alt={track.album}
-              width={40}
-              height={40}
-              className="rounded object-cover"
-            />
-            <div className="flex-1 min-w-0">
-              <h3 className="font-medium truncate">{track.title}</h3>
-              <p className="text-sm text-muted-foreground truncate">
-                {track.artist}
-              </p>
+      {likedTracks.length > 0 ? (
+        <div className="space-y-1">
+          {likedTracks.map(({ id, name, cover, artist, duration }, index) => (
+            <div
+              key={id}
+              className="flex items-center gap-4 p-3 rounded hover:bg-muted/50 group"
+            >
+              <span className="w-4 text-sm text-muted-foreground">
+                {index + 1}
+              </span>
+              <Image
+                src={cover || '/images/abstract-geometric-shapes.png'}
+                alt={name}
+                width={40}
+                height={40}
+                className="rounded object-cover"
+              />
+              <div className="flex-1 min-w-0">
+                <h3 className="font-medium truncate">{name}</h3>
+                <p className="text-sm text-muted-foreground truncate">
+                  {artist}
+                </p>
+              </div>
+              <span className="text-sm text-muted-foreground">
+                {convertToMS(duration ?? 0)}
+              </span>
+              <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                <Button size="sm" variant="ghost">
+                  <Heart className="h-4 w-4 fill-accent text-accent" />
+                </Button>
+                <Button size="sm" variant="ghost">
+                  <MoreHorizontal className="h-4 w-4" />
+                </Button>
+              </div>
             </div>
-            <span className="text-sm text-muted-foreground">
-              {track.duration}
-            </span>
-            <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-              <Button size="sm" variant="ghost">
-                <Heart className="h-4 w-4 fill-accent text-accent" />
-              </Button>
-              <Button size="sm" variant="ghost">
-                <MoreHorizontal className="h-4 w-4" />
-              </Button>
-            </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      ) : (
+        <Placeholder />
+      )}
     </div>
   );
 }

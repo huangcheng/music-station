@@ -2,8 +2,9 @@ import { from, of, lastValueFrom, forkJoin, iif, defer } from 'rxjs';
 import { switchMap, map, catchError } from 'rxjs/operators';
 import { NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
+import { omit } from 'es-toolkit';
 
-import type { Genre, Response } from '@/types';
+import type { Genre, Response, Track } from '@/types';
 
 const prisma = new PrismaClient();
 
@@ -22,11 +23,21 @@ export async function GET() {
               from(
                 prisma.trackGenre.findMany({
                   where: { genreId: g.id },
+                  include: {
+                    track: true,
+                  },
                 }),
               ).pipe(
-                map((records) => ({
+                map((records) => records.map(({ track }) => track)),
+                map((tracks) => ({
                   ...g,
-                  tracks: (records ?? []).map(({ trackId }) => trackId),
+                  tracks: tracks.map((track) => ({
+                    ...omit(track, ['hash', 'albumId', 'artistId']),
+                    file: `/api/upload?file=${encodeURIComponent(track.file)}`,
+                    cover: track.cover
+                      ? `/api/upload?file=${encodeURIComponent(track.cover)}`
+                      : undefined,
+                  })) as unknown as Track[],
                 })),
               ),
             ),

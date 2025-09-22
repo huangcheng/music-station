@@ -1,6 +1,6 @@
 import { of, lastValueFrom } from 'rxjs';
 import { map, catchError } from 'rxjs/operators';
-import { setup, assign, fromPromise, stopChild } from 'xstate';
+import { setup, assign, fromPromise } from 'xstate';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 
@@ -52,19 +52,13 @@ type PlayerEvents =
   | { type: 'SET_TIME'; time: number }
   | { type: 'TOGGLE_MUTE' };
 
-type PlayerInput = {
-  volume?: number;
-  loop?: LoopMode;
-  tracks?: Track[];
-};
-
 const playerMachine = setup({
   types: {
     context: {} as PlayerContext,
     events: {} as PlayerEvents,
-    input: {} as PlayerInput,
   },
   actions: {
+    setTracks: assign((_, { tracks }: { tracks: Track[] }) => ({ tracks })),
     toggleMute: assign(({ context }) =>
       context.volume === 0
         ? { volume: context.originalVolume ?? 100 }
@@ -181,12 +175,12 @@ const playerMachine = setup({
 }).createMachine({
   id: 'player',
   initial: 'stopped',
-  context: ({ input: { volume, tracks, loop } }) => ({
+  context: {
     status: 'stopped',
-    volume: volume ?? 100,
-    loop: loop ?? 'all',
-    tracks: tracks ?? [],
-  }),
+    volume: 100,
+    loop: 'all',
+    tracks: [],
+  },
   states: {
     stopped: {
       on: {
@@ -208,22 +202,10 @@ const playerMachine = setup({
             }),
         }),
       ],
-      exit: [
-        stopChild('child-update-recently-played'),
-        assign({ updateRecentlyPlayedActorRef: undefined }),
-      ],
       on: {
         PLAY: { target: 'playing' },
         PAUSE: { target: 'paused' },
         STOP: { target: 'stopped' },
-        SET_VOLUME: {
-          actions: [
-            {
-              type: 'setVolume',
-              params: ({ event: { volume } }) => ({ volume }),
-            },
-          ],
-        },
         TOGGLE_PLAY: { target: 'paused' },
       },
     },
@@ -245,7 +227,12 @@ const playerMachine = setup({
       ],
     },
     SET_TRACKS: {
-      actions: assign(({ event: { tracks } }) => ({ tracks })),
+      actions: [
+        {
+          type: 'setTracks',
+          params: ({ event: { tracks } }) => ({ tracks }),
+        },
+      ],
     },
     MUTE: {
       actions: [{ type: 'mute' }],
@@ -278,6 +265,7 @@ const playerMachine = setup({
           type: 'switchLoop',
         },
       ],
+      reenter: true,
     },
     SET_TIME: {
       actions: [

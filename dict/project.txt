@@ -6,3 +6,4 @@ dyld
 gqwwm
 Crossfade
 Gapless
+partialize
