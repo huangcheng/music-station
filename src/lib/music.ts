@@ -80,8 +80,7 @@ export const calcSampleRate = (
 
 export const formatSampleRate = (sampleRate?: number): string =>
   sampleRate
-    ? // eslint-disable-next-line unicorn/no-nested-ternary
-      sampleRate >= 1000
+    ? sampleRate >= 1000
       ? `${(sampleRate / 1000).toFixed(1)} kHz`
       : `${sampleRate.toFixed(1)} Hz`
     : 'Unknown';

@@ -92,7 +92,7 @@ export default function Home(): ReactElement {
                   <CardContent className="p-4 flex items-center gap-4">
                     <div className="relative">
                       <Image
-                        src={cover || '/placeholder.svg'}
+                        src={cover || '/images/abstract-geometric-shapes.png'}
                         alt={name}
                         width={64}
                         height={64}
@@ -150,7 +150,7 @@ export default function Home(): ReactElement {
                 <CardContent className="p-4 text-center">
                   <div className="relative mb-3">
                     <Image
-                      src={cover || '/placeholder.svg'}
+                      src={cover || '/images/abstract-geometric-shapes.png'}
                       alt={name}
                       width={200}
                       height={200}

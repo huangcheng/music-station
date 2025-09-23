@@ -22,10 +22,10 @@ import { useTranslations } from 'next-intl';
 
 import type { ReactElement } from 'react';
 
+import { cn, convertToMS, formatSampleRate } from '@/lib';
 import { Button, Slider, Badge } from '@/components';
 
 import type { LoopMode, Track } from '@/types';
-import { cn, convertToMS, formatSampleRate } from '@/lib';
 
 interface ControlsProps {
   volume?: number;
