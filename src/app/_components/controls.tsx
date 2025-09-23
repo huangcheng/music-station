@@ -27,7 +27,7 @@ import { Button, Slider, Badge } from '@/components';
 
 import type { LoopMode, Track } from '@/types';
 
-interface ControlsProps {
+export interface ControlsProps {
   volume?: number;
   isPlaying?: boolean;
   loop?: LoopMode;
