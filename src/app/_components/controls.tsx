@@ -35,8 +35,8 @@ export interface ControlsProps {
   track?: Track;
   onNext?: () => void;
   onPrev?: () => void;
-  onVolumeChange?: (value: number[]) => void;
-  onTimeChange?: (value: number[]) => void;
+  onVolumeChange?: (value: number) => void;
+  onTimeChange?: (value: number) => void;
   onMuteToggle?: () => void;
   onLikeToggle?: () => void;
   onPlayToggle?: () => void;
@@ -217,7 +217,13 @@ export default function Controls({
             <div className="flex-1 relative">
               <Slider
                 value={[_progress]}
-                onValueChange={onTimeChange}
+                onValueChange={(value) => {
+                  onTimeChange?.(
+                    value?.[0]
+                      ? ((value?.[0] ?? 0) / 100) * (duration ?? 0)
+                      : 0,
+                  );
+                }}
                 max={100}
                 step={0.1}
                 className="flex-1 cursor-pointer"
@@ -262,7 +268,9 @@ export default function Controls({
           <div className="flex items-center gap-2">
             <Slider
               value={[volume ?? 0]}
-              onValueChange={onVolumeChange}
+              onValueChange={(value) => {
+                onVolumeChange?.(value?.[0] ?? 100);
+              }}
               max={100}
               step={1}
               className="w-28 cursor-pointer"

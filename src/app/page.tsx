@@ -222,19 +222,14 @@ export default function Home(): ReactElement {
         onPrev={() => send({ type: 'PLAY_PREV' })}
         onNext={() => send({ type: 'PLAY_NEXT' })}
         onMuteToggle={() => send({ type: 'TOGGLE_MUTE' })}
-        onTimeChange={(value) => {
-          const percent = value[0] ?? 0;
-          const time = ((track?.duration ?? 0) * percent) / 100;
-
+        onTimeChange={(time) => {
           send({ type: 'SET_TIME', time });
 
           if (audio.current) {
             audio.current.currentTime = time;
           }
         }}
-        onVolumeChange={(value) =>
-          send({ type: 'SET_VOLUME', volume: value[0] })
-        }
+        onVolumeChange={(volume) => send({ type: 'SET_VOLUME', volume })}
         onLoopToggle={() => send({ type: 'SWITCH_LOOP' })}
       />
     </div>
