@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 import Image from 'next/image';
 import { useShallow } from 'zustand/react/shallow';
 import { useTranslations } from 'next-intl';
@@ -108,29 +108,6 @@ export default function Library() {
   );
 
   const _tracks = useMemo(() => playlist?.tracks, [playlist]);
-
-  const onSubmitCreatePlaylist = useCallback(
-    () =>
-      createPlaylistForm.handleSubmit(({ name }) => {
-        createPlaylist(name);
-      })(),
-    [createPlaylist, createPlaylistForm],
-  );
-
-  const onSubmitUpdatePlaylist = useCallback(
-    () =>
-      updatePlaylistFrom.handleSubmit((data) => {
-        if (!playlist) {
-          return;
-        }
-
-        updatePlaylist({
-          id: playlist.id,
-          params: data,
-        });
-      })(),
-    [playlist, updatePlaylistFrom, updatePlaylist],
-  );
 
   useEffect(() => {
     updatePlaylistFrom.setValue('tracks', _tracks?.map(({ id }) => id) ?? []);
@@ -298,7 +275,12 @@ export default function Library() {
             <DialogTitle>{t('Create Playlist')}</DialogTitle>
           </DialogHeader>
           <Form {...createPlaylistForm}>
-            <form onSubmit={onSubmitCreatePlaylist} className="space-y-4">
+            <form
+              onSubmit={createPlaylistForm.handleSubmit(({ name }) => {
+                createPlaylist(name);
+              })}
+              className="space-y-4"
+            >
               <FormField
                 control={createPlaylistForm.control}
                 name="name"
@@ -337,7 +319,19 @@ export default function Library() {
             <DialogTitle>{t('Modify Playlist')}</DialogTitle>
           </DialogHeader>
           <Form {...updatePlaylistFrom}>
-            <form onSubmit={onSubmitUpdatePlaylist} className="space-y-4">
+            <form
+              onSubmit={updatePlaylistFrom.handleSubmit((data) => {
+                if (!playlist) {
+                  return;
+                }
+
+                updatePlaylist({
+                  id: playlist.id,
+                  params: data,
+                });
+              })}
+              className="space-y-4"
+            >
               <FormField
                 control={updatePlaylistFrom.control}
                 name="name"

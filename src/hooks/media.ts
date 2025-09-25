@@ -4,7 +4,6 @@ import { useMutation, useQuery } from '@tanstack/react-query';
 import type { UseMutationOptions } from '@tanstack/react-query';
 
 import type {
-  CreatePlaylistRequest,
   Playlist,
   Track,
   UpdatePlaylistRequest,
@@ -37,18 +36,6 @@ export const usePlaylistsQuery = () =>
   useQuery({
     queryKey: ['playlists'],
     queryFn: async () => await lastValueFrom(fetchPlaylists$()),
-  });
-
-export const useAddToDefaultPlaylistMutation = (
-  options?: Omit<
-    UseMutationOptions<Playlist, Error, CreatePlaylistRequest>,
-    'mutationFn'
-  >,
-) =>
-  useMutation({
-    mutationFn: async (params: CreatePlaylistRequest) =>
-      await lastValueFrom(createPlaylist$(params)),
-    ...options,
   });
 
 export const useUpdatePlaylistMutation = (
