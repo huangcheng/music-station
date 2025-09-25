@@ -1,4 +1,5 @@
 import { createStore } from 'zustand/vanilla';
+import { persist } from 'zustand/middleware';
 
 import { NAVIGATION_ITEMS, LIBRARY_ITEMS, DISCOVER_ITEMS } from '@/constants';
 
@@ -27,8 +28,16 @@ export const initGlobalStore = (): GlobalState => defaultInitState;
 export const createGlobalStore = (
   initState: GlobalState = defaultInitState,
 ) => {
-  return createStore<GlobalStore>()((set) => ({
-    ...initState,
-    setNav: (nav: NAV) => set(() => ({ nav })),
-  }));
+  return createStore<GlobalStore>()(
+    persist(
+      (set) => ({
+        ...initState,
+        setNav: (nav: NAV) => set(() => ({ nav })),
+      }),
+      {
+        name: 'global-storage',
+        partialize: ({ nav }) => ({ nav }),
+      },
+    ),
+  );
 };

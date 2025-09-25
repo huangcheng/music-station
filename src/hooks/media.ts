@@ -12,12 +12,13 @@ import type {
 } from '@/types';
 
 import {
-  addToDefaultPlaylist$,
+  createPlaylist$,
   fetchArtists$,
   fetchTracks$,
   fetchPlaylists$,
   updatePlaylist$,
   updateTrack$,
+  deletePlaylist$,
 } from './api';
 
 export const useTracksQuery = () =>
@@ -46,7 +47,7 @@ export const useAddToDefaultPlaylistMutation = (
 ) =>
   useMutation({
     mutationFn: async (params: CreatePlaylistRequest) =>
-      await lastValueFrom(addToDefaultPlaylist$(params)),
+      await lastValueFrom(createPlaylist$(params)),
     ...options,
   });
 
@@ -89,5 +90,21 @@ export const useUpdateTrackMutation = (
       id: number;
       params: UpdateTrackRequest;
     }) => await lastValueFrom(updateTrack$(id, params)),
+    ...options,
+  });
+
+export const useCreatePlaylistMutation = (
+  options?: Omit<UseMutationOptions<Playlist, Error, string>, 'mutationFn'>,
+) =>
+  useMutation({
+    mutationFn: async (name) => await lastValueFrom(createPlaylist$({ name })),
+    ...options,
+  });
+
+export const useDeletePlaylistMutation = (
+  options?: Omit<UseMutationOptions<void, Error, number>, 'mutationFn'>,
+) =>
+  useMutation({
+    mutationFn: async (id: number) => await lastValueFrom(deletePlaylist$(id)),
     ...options,
   });

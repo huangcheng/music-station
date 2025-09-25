@@ -113,5 +113,16 @@
   "Cancel": "Cancel",
   "Confirm": "Confirm",
   "stores-description": "Persistent storage for application data, such as user settings and preferences.",
-  "states-description": "Persistent storage for the application's internal state to restore sessions."
+  "states-description": "Persistent storage for the application's internal state to restore sessions.",
+  "Modify": "Modify",
+  "Delete": "Delete",
+  "My Awesome Playlist": "My Awesome Playlist",
+  "Save": "Save",
+  "Continue": "Continue",
+  "Create Playlist": "Create Playlist",
+  "Playlist Name": "Playlist Name",
+  "Playlist name is required": "Playlist name is required",
+  "Modify Playlist": "Modify Playlist",
+  "Are you sure?": "Are you sure?",
+  "This action cannot be undone, this will permanently delete the playlist": "This action cannot be undone, this will permanently delete the playlist"
 }

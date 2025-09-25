@@ -19,3 +19,17 @@ export * from './input';
 export * from './scroll-area';
 
 export * from './tooltip';
+
+export * from './alert-dialog';
+
+export * from './dropdown-menu';
+
+export * from './form';
+
+export * from './label';
+
+export * from './context-menu';
+
+export * from './command';
+
+export * from './popover';

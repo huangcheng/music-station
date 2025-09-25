@@ -45,7 +45,7 @@ export const fetchAlbums$ = () => fetch$<Album[]>('/albums');
 
 export const fetchPlaylists$ = () => fetch$<Playlist[]>('/playlists');
 
-export const addToDefaultPlaylist$ = (
+export const createPlaylist$ = (
   params: CreatePlaylistRequest,
 ): Observable<Playlist> =>
   fetch$('/playlist', {
@@ -57,6 +57,11 @@ export const updatePlaylist$ = (id: number, params: UpdatePlaylistRequest) =>
   fetch$<Playlist>(`/playlist/${id}`, {
     method: 'PUT',
     body: JSON.stringify(params),
+  });
+
+export const deletePlaylist$ = (id: number) =>
+  fetch$<void>(`/playlist/${id}`, {
+    method: 'DELETE',
   });
 
 export const updateTrack$ = (

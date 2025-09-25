@@ -113,5 +113,16 @@
   "Cancel": "取消",
   "Confirm": "确认",
   "stores-description": "用于存储应用程序数据的持久化空间，例如用户设置和偏好。",
-  "states-description": "用于存储应用程序内部状态的持久化空间，以便恢复会话。"
+  "states-description": "用于存储应用程序内部状态的持久化空间，以便恢复会话。",
+  "Modify": "修改",
+  "Delete": "删除",
+  "My Awesome Playlist": "我的超棒播放列表",
+  "Save": "保存",
+  "Continue": "继续",
+  "Create Playlist": "创建播放列表",
+  "Playlist Name": "播放列表名称",
+  "Playlist name is required": "播放列表名称是必填项",
+  "Modify Playlist": "修改播放列表",
+  "Are you sure?": "您确定吗？",
+  "This action cannot be undone, this will permanently delete the playlist": "此操作无法撤销，将永久删除该播放列表"
 }

@@ -50,6 +50,7 @@ export default function Home(): ReactElement {
       await fetch();
     },
   });
+
   const { mutate: updateTrack } = useUpdateTrackMutation({
     onSuccess: async () => {
       await fetch();
@@ -127,9 +128,10 @@ export default function Home(): ReactElement {
     return () => scope.current?.revert();
   }, [root, scope]);
 
-  useEffect(() => {
-    void fetch();
-  }, [fetch]);
+  // useEffect(() => {
+  //   void fetch();
+  // }, [fetch]);
+  useMount(fetch);
 
   useEffect(() => {
     if (audio.current && volume !== undefined && volume >= 0) {
