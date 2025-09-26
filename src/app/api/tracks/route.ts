@@ -14,6 +14,7 @@ export async function GET() {
         artist: true,
         album: true,
       },
+      orderBy: { createdAt: 'asc' },
     }),
   ).pipe(
     switchMap((tracks) =>
@@ -26,6 +27,7 @@ export async function GET() {
                 prisma.trackGenre.findMany({
                   where: { trackId: track.id },
                   include: { genre: true },
+                  orderBy: { createdAt: 'asc' },
                 }),
               ).pipe(
                 map((genre) => ({

@@ -13,7 +13,7 @@ export async function GET() {
         tracks: true,
         artist: true,
       },
-      orderBy: { name: 'asc' },
+      orderBy: { createdAt: 'asc' },
     }),
   ).pipe(
     map((albums) =>

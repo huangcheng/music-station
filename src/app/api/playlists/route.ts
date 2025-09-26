@@ -11,7 +11,7 @@ const prisma = new PrismaClient();
 export async function GET() {
   const ob$ = from(
     prisma.playlist.findMany({
-      orderBy: { name: 'asc' },
+      orderBy: { createdAt: 'asc' },
     }),
   ).pipe(
     switchMap((playlists) =>
@@ -26,6 +26,7 @@ export async function GET() {
                   include: {
                     track: true,
                   },
+                  orderBy: { createdAt: 'asc' },
                 }),
               ).pipe(
                 map(

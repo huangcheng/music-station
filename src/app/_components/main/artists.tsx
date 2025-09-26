@@ -30,7 +30,7 @@ export default function Artists() {
                   alt={name}
                   width={200}
                   height={200}
-                  className="object-cover"
+                  className="object-cover w-full aspect-square"
                 />
               </div>
               <h3 className="font-semibold truncate">{name}</h3>
