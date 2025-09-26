@@ -10,6 +10,7 @@ import {
   Heart,
   Volume2,
   VolumeX,
+  Volume1,
   Shuffle,
   Repeat,
   MoreHorizontal,
@@ -259,8 +260,10 @@ export default function Controls({
             onClick={onMuteToggle}
             className="text-muted-foreground hover:text-foreground transition-colors"
           >
-            {volume === 0 ? (
+            {(volume ?? 0) === 0 ? (
               <VolumeX className="h-4 w-4" />
+            ) : volume! <= 50 ? (
+              <Volume1 className="h-4 w-4" />
             ) : (
               <Volume2 className="h-4 w-4" />
             )}

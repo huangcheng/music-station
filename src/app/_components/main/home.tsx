@@ -154,7 +154,7 @@ export default function Home(): ReactElement {
                       alt={name}
                       width={200}
                       height={200}
-                      className="rounded-lg object-cover shadow-md aspect-2/3"
+                      className="rounded-lg object-cover shadow-md w-full aspect-square"
                     />
                     <Badge className="absolute -top-2 -right-2 bg-orange-500 text-white">
                       #{index + 1}

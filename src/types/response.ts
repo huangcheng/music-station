@@ -29,6 +29,8 @@ export type Track = {
   numberOfChannels?: number;
   size: number;
   recentlyPlayed: number;
+  createdAt: Date;
+  updatedAt: Date;
 };
 
 export type Artist = {
@@ -37,6 +39,8 @@ export type Artist = {
 
   tracks: Track[];
   albums: Album[];
+  createdAt: Date;
+  updatedAt: Date;
 };
 
 export type Album = {
@@ -46,6 +50,8 @@ export type Album = {
   year?: number;
 
   tracks?: Track[];
+  createdAt: Date;
+  updatedAt: Date;
 };
 
 export type Playlist = {
@@ -54,6 +60,8 @@ export type Playlist = {
   internal: boolean;
 
   tracks: Track[];
+  createdAt: Date;
+  updatedAt: Date;
 };
 
 export type Genre = {
@@ -61,4 +69,6 @@ export type Genre = {
   name: string;
 
   tracks: Track[];
+  createdAt: Date;
+  updatedAt: Date;
 };

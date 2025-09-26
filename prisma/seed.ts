@@ -14,7 +14,7 @@ async function main() {
           from(
             prisma.playlist.create({
               data: {
-                name: 'Default Playlist',
+                name: 'Default',
                 internal: true,
               },
             }),

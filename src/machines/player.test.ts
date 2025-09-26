@@ -1,4 +1,5 @@
 import { createActor } from 'xstate';
+import { describe, it, expect } from 'vitest';
 
 import playerMachine from './player';
 

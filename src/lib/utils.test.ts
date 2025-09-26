@@ -1,3 +1,5 @@
+import { describe, test, expect } from 'vitest';
+
 import { getStrSize, formatFileSize } from './utils';
 
 describe('Test the utils module', () => {

@@ -5,6 +5,7 @@ import { PlayerContext } from '@/machines';
 export interface MainContextProps {
   playerContext?: PlayerContext;
   onPlay?: (id: number) => void;
+  onPlayPlaylist?: (id: number) => void;
   onFavoriteToggle?: (id: number, favorite: boolean) => void;
 }
 

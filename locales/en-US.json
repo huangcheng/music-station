@@ -116,6 +116,7 @@
   "states-description": "Persistent storage for the application's internal state to restore sessions.",
   "Modify": "Modify",
   "Delete": "Delete",
+  "Play Playlist": "Play Playlist",
   "My Awesome Playlist": "My Awesome Playlist",
   "Save": "Save",
   "Continue": "Continue",

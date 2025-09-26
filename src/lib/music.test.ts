@@ -1,3 +1,5 @@
+import { describe, expect, it } from 'vitest';
+
 import { calcSampleRate } from './music';
 
 describe('Test the music module', () => {

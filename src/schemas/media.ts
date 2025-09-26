@@ -3,7 +3,7 @@ import zod from 'zod';
 export const createPlayListScheme = zod.object({
   name: zod
     .string()
-    .min(4, 'Playlist name cannot be empty')
+    .min(4, 'Playlist name must be at least 4 characters')
     .max(20, 'Playlist name cannot exceed 20 characters'),
 });
 

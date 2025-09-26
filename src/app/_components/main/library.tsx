@@ -1,11 +1,11 @@
-import { useEffect, useMemo } from 'react';
+import { useContext, useEffect, useMemo } from 'react';
 import Image from 'next/image';
 import { useShallow } from 'zustand/react/shallow';
 import { useTranslations } from 'next-intl';
 import { useImmer } from 'use-immer';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { MoreVertical, Pencil, Trash2, Plus } from 'lucide-react';
+import { MoreVertical, Pencil, Trash2, Plus, Play } from 'lucide-react';
 
 import { useMediaStore } from '@/stores';
 import {
@@ -51,6 +51,7 @@ import {
 
 import type { CreatePlaylist, UpdatePlaylist } from '@/schemas';
 
+import MainContext from './context';
 import Placeholder from './placeholder';
 
 type State = {
@@ -68,6 +69,8 @@ export default function Library() {
   });
 
   const { playlistId, action } = state;
+
+  const { onPlayPlaylist } = useContext(MainContext);
 
   const { playlists, tracks, fetchPlaylists } = useMediaStore(
     useShallow(({ playlists, tracks, fetchPlaylists }) => ({
@@ -155,107 +158,123 @@ export default function Library() {
       </div>
       {playlists.length > 0 ? (
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
-          {playlists.map((playlist) => {
-            const card = (
-              <Card
-                key={playlist.id}
-                className="group hover:bg-card/80 transition-colors"
-              >
-                <CardContent className="p-4 relative">
-                  {!playlist.internal && (
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="absolute top-2 right-2 h-6 w-6 p-0 opacity-0 group-hover:opacity-100"
-                        >
-                          <MoreVertical className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent>
-                        <DropdownMenuItem
-                          onClick={() =>
-                            setState((draft) => {
-                              draft.playlistId = playlist.id;
-                              draft.action = 'update';
-                            })
-                          }
-                        >
-                          <Pencil className="mr-2 h-4 w-4" />
-                          <span>{t('Modify')}</span>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                          onClick={() =>
-                            setState((draft) => {
-                              draft.playlistId = playlist.id;
-                              draft.action = 'delete';
-                            })
-                          }
-                          className="text-red-500"
-                        >
-                          <Trash2 className="mr-2 h-4 w-4" />
-                          <span>{t('Delete')}</span>
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  )}
-                  <div className="aspect-square bg-muted rounded mb-4 flex items-center justify-center cursor-pointer">
-                    <Image
-                      src={
-                        playlist.tracks.find(({ cover }) => cover)?.cover ??
-                        '/images/abstract-geometric-shapes.png'
+          {playlists
+            .sort((a, b) => a.id - b.id)
+            .map((playlist) => {
+              const card = (
+                <Card
+                  key={playlist.id}
+                  className="group hover:bg-card/80 transition-colors"
+                >
+                  <CardContent className="p-4 relative">
+                    {!playlist.internal && (
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="absolute top-2 right-2 h-6 w-6 p-0 opacity-0 group-hover:opacity-100"
+                          >
+                            <MoreVertical className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent>
+                          <DropdownMenuItem
+                            onClick={() =>
+                              setState((draft) => {
+                                draft.playlistId = playlist.id;
+                                draft.action = 'update';
+                              })
+                            }
+                          >
+                            <Pencil className="mr-2 h-4 w-4" />
+                            <span>{t('Modify')}</span>
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            onClick={() =>
+                              setState((draft) => {
+                                draft.playlistId = playlist.id;
+                                draft.action = 'delete';
+                              })
+                            }
+                            className="text-red-500"
+                          >
+                            <Trash2 className="mr-2 h-4 w-4" />
+                            <span>{t('Delete')}</span>
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    )}
+                    <div className="aspect-square w-full bg-muted rounded mb-4 flex items-center justify-center cursor-pointer relative overflow-hidden">
+                      <Image
+                        src={
+                          playlist.tracks.find(({ cover }) => cover)?.cover ??
+                          '/images/abstract-geometric-shapes.png'
+                        }
+                        alt={playlist.name}
+                        width={200}
+                        height={200}
+                        className="object-fill w-full aspect-square rounded"
+                      />
+                      {/* Play button overlay */}
+                      <Button
+                        size="icon"
+                        className="absolute inset-0 m-auto h-12 w-12 rounded-full bg-primary text-white opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"
+                        onClick={(e) => {
+                          e.stopPropagation();
+
+                          onPlayPlaylist?.(playlist.id);
+                        }}
+                        aria-label={t('Play Playlist')}
+                        tabIndex={0}
+                      >
+                        <Play className="h-6 w-6" />
+                      </Button>
+                    </div>
+                    <h3 className="font-semibold truncate cursor-pointer">
+                      {playlist.name}
+                    </h3>
+                    <p className="text-sm text-muted-foreground cursor-pointer">
+                      {playlist.name} • {playlist.tracks.length} {t('songs')}
+                    </p>
+                  </CardContent>
+                </Card>
+              );
+
+              if (playlist.internal) {
+                return card;
+              }
+
+              return (
+                <ContextMenu key={playlist.id}>
+                  <ContextMenuTrigger>{card}</ContextMenuTrigger>
+                  <ContextMenuContent>
+                    <ContextMenuItem
+                      onClick={() =>
+                        setState((draft) => {
+                          draft.playlistId = playlist.id;
+                        })
                       }
-                      alt={playlist.name}
-                      width={200}
-                      height={200}
-                      className="object-fill rounded"
-                    />
-                  </div>
-                  <h3 className="font-semibold truncate cursor-pointer">
-                    {playlist.name}
-                  </h3>
-                  <p className="text-sm text-muted-foreground cursor-pointer">
-                    {playlist.name} • {playlist.tracks.length} {t('songs')}
-                  </p>
-                </CardContent>
-              </Card>
-            );
-
-            if (playlist.internal) {
-              return card;
-            }
-
-            return (
-              <ContextMenu key={playlist.id}>
-                <ContextMenuTrigger>{card}</ContextMenuTrigger>
-                <ContextMenuContent>
-                  <ContextMenuItem
-                    onClick={() =>
-                      setState((draft) => {
-                        draft.playlistId = playlist.id;
-                      })
-                    }
-                  >
-                    <Pencil className="mr-2 h-4 w-4" />
-                    <span>{t('Modify')}</span>
-                  </ContextMenuItem>
-                  <ContextMenuItem
-                    onClick={() =>
-                      setState((draft) => {
-                        draft.playlistId = playlist.id;
-                        draft.action = 'delete';
-                      })
-                    }
-                    className="text-red-500"
-                  >
-                    <Trash2 className="mr-2 h-4 w-4" />
-                    <span>{t('Delete')}</span>
-                  </ContextMenuItem>
-                </ContextMenuContent>
-              </ContextMenu>
-            );
-          })}
+                    >
+                      <Pencil className="mr-2 h-4 w-4" />
+                      <span>{t('Modify')}</span>
+                    </ContextMenuItem>
+                    <ContextMenuItem
+                      onClick={() =>
+                        setState((draft) => {
+                          draft.playlistId = playlist.id;
+                          draft.action = 'delete';
+                        })
+                      }
+                      className="text-red-500"
+                    >
+                      <Trash2 className="mr-2 h-4 w-4" />
+                      <span>{t('Delete')}</span>
+                    </ContextMenuItem>
+                  </ContextMenuContent>
+                </ContextMenu>
+              );
+            })}
         </div>
       ) : (
         <Placeholder />

@@ -16,6 +16,9 @@ model Genre {
   name String @unique
 
   tracks TrackGenre[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Album {
@@ -28,6 +31,9 @@ model Album {
 
   tracks Track[]
   artist Artist? @relation(fields: [artistId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Artist {
@@ -36,6 +42,9 @@ model Artist {
 
   tracks Track[]
   albums Album[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Track {
@@ -67,6 +76,9 @@ model Track {
   album     Album?          @relation(fields: [albumId], references: [id])
   artist    Artist?         @relation(fields: [artistId], references: [id])
   playlists PlaylistTrack[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model TrackGenre {
@@ -75,6 +87,9 @@ model TrackGenre {
 
   track Track @relation(fields: [trackId], references: [id])
   genre Genre @relation(fields: [genreId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@id([trackId, genreId])
 }
@@ -85,6 +100,9 @@ model Playlist {
   internal Boolean @default(false)
 
   tracks PlaylistTrack[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model PlaylistTrack {
@@ -93,6 +111,9 @@ model PlaylistTrack {
 
   playlist Playlist @relation(fields: [playlistId], references: [id])
   track    Track    @relation(fields: [trackId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@id([playlistId, trackId])
 }

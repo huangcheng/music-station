@@ -107,6 +107,37 @@ export default function Home(): ReactElement {
     [tracks, defaultPlaylist?.id, send, updatePlaylist],
   );
 
+  const handlePlayPlaylist = useCallback(
+    (id: number) => {
+      const playlist = playlists.find((playlist) => playlist.id === id);
+
+      if (!playlist) {
+        return;
+      }
+
+      const { tracks = [] } = playlist;
+
+      if (tracks.length === 0) {
+        return;
+      }
+
+      send({
+        type: 'SET_TRACKS',
+        tracks,
+      });
+
+      send({
+        type: 'SET_TRACK',
+        id: tracks[0].id,
+      });
+
+      send({
+        type: 'PLAY',
+      });
+    },
+    [playlists, send],
+  );
+
   const handleFavoriteToggle = useCallback(
     (id: number, favorite: boolean): void =>
       updateTrack({ id, params: { favorite } }),
@@ -117,9 +148,10 @@ export default function Home(): ReactElement {
     () => ({
       playerContext: context,
       onPlay: handlePlay,
+      onPlayPlaylist: handlePlayPlaylist,
       onFavoriteToggle: handleFavoriteToggle,
     }),
-    [context, handlePlay, handleFavoriteToggle],
+    [context, handlePlay, handleFavoriteToggle, handlePlayPlaylist],
   );
 
   useEffect(() => {
