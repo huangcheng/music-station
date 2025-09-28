@@ -16,6 +16,8 @@ import type {
   UpdateTrackRequest,
   Genre,
   UpdatePlaylistRequest,
+  LoginRequest,
+  User,
 } from '@/types';
 
 export const fetch$ = <R>(url: string, init?: RequestInit): Observable<R> =>
@@ -74,3 +76,9 @@ export const updateTrack$ = (
   });
 
 export const fetchGenre$ = () => fetch$<Genre[]>('/genre');
+
+export const login$ = (params: LoginRequest) =>
+  fetch$<User>('/login', {
+    method: 'POST',
+    body: JSON.stringify(params),
+  });

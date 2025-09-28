@@ -28,3 +28,9 @@ export type UpdateTrackRequest = {
   recentlyPlayed?: number | null;
   genre?: number[];
 };
+
+export type LoginRequest = {
+  email: string;
+  password: string;
+  remember?: boolean;
+};

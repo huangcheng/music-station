@@ -1,0 +1,106 @@
+model Genre {
+  id   Int    @id @default(autoincrement())
+  name String @unique
+
+  tracks TrackGenre[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Album {
+  id         Int     @id @default(autoincrement())
+  name       String  @unique
+  year       Int?
+  date       String?
+  trackCount Int?
+  artistId   Int?
+
+  tracks Track[]
+  artist Artist? @relation(fields: [artistId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Artist {
+  id   Int    @id @default(autoincrement())
+  name String @unique
+
+  tracks Track[]
+  albums Album[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Track {
+  id               Int      @id @default(autoincrement())
+  hash             String   @unique
+  name             String
+  year             Int?
+  artistId         Int?
+  albumId          Int?
+  trackNo          Int?
+  disk             Int?
+  cover            String?
+  file             String
+  date             String?
+  codec            String?
+  bitrate          Int?
+  bitsPerSample    Int?
+  sampleRate       Int?
+  duration         Int?
+  lossless         Boolean?
+  numberOfChannels Int?
+  size             Int?
+  favorite         Boolean  @default(false)
+  playCount        Int      @default(0)
+  recentlyPlayed   Int?
+
+  genre TrackGenre[]
+
+  album     Album?          @relation(fields: [albumId], references: [id])
+  artist    Artist?         @relation(fields: [artistId], references: [id])
+  playlists PlaylistTrack[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model TrackGenre {
+  trackId Int
+  genreId Int
+
+  track Track @relation(fields: [trackId], references: [id])
+  genre Genre @relation(fields: [genreId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@id([trackId, genreId])
+}
+
+model Playlist {
+  id       Int     @id @default(autoincrement())
+  name     String
+  internal Boolean @default(false)
+
+  tracks PlaylistTrack[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model PlaylistTrack {
+  playlistId Int
+  trackId    Int
+
+  playlist Playlist @relation(fields: [playlistId], references: [id])
+  track    Track    @relation(fields: [trackId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@id([playlistId, trackId])
+}

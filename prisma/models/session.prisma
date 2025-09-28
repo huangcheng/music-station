@@ -1,0 +1,9 @@
+model Session {
+  id     Int @id @default(autoincrement())
+  userId Int
+
+  expires   DateTime
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+}

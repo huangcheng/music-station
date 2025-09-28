@@ -33,3 +33,5 @@ export * from './context-menu';
 export * from './command';
 
 export * from './popover';
+
+export * from './tabs';

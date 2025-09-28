@@ -2,9 +2,10 @@ import { defer, forkJoin, from, iif, lastValueFrom, of } from 'rxjs';
 import { catchError, map, switchMap } from 'rxjs/operators';
 import { NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
-import { isEqual } from 'es-toolkit';
 
 import type { NextRequest } from 'next/server';
+import type { Observable } from 'rxjs';
+import type Prisma from '@prisma/client';
 
 import type { CreatePlaylistRequest } from '@/types';
 
@@ -25,37 +26,59 @@ export async function PUT(
           include: { tracks: true },
         }),
       ).pipe(
-        switchMap((record) =>
+        map((record) => {
+          const { tracks: existingTracks = [] } = record ?? {};
+          const existingTrackIds = existingTracks
+            .map(({ trackId }) => trackId)
+            .sort((a, b) => a - b);
+
+          const newTrackIds = (tracks ?? []).sort((a, b) => a - b);
+
+          // Find items to be created (in newTrackIds but not in existingTrackIds)
+          const itemsToBeCreated = newTrackIds.filter(
+            (id) => !existingTrackIds.includes(id),
+          );
+
+          // Find items to be deleted (in existingTrackIds but not in newTrackIds)
+          const itemsToBeDeleted = existingTrackIds.filter(
+            (id) => !newTrackIds.includes(id),
+          );
+
+          return { record, itemsToBeCreated, itemsToBeDeleted };
+        }),
+        switchMap(({ record, itemsToBeCreated, itemsToBeDeleted }) =>
           iif(
             () =>
               record !== null &&
-              tracks !== undefined &&
-              !isEqual(
-                [...tracks].sort(),
-                record.tracks.map(({ trackId }) => trackId).sort(),
-              ),
+              (itemsToBeCreated.length > 0 || itemsToBeDeleted.length > 0),
             defer(() =>
-              from(
-                prisma.playlistTrack.deleteMany({ where: { playlistId: id } }),
-              ).pipe(
-                switchMap(() =>
-                  forkJoin(
-                    tracks!.map((trackId) =>
-                      from(
-                        prisma.playlistTrack.create({
-                          data: { playlistId: id, trackId },
+              forkJoin(
+                [
+                  itemsToBeCreated.length > 0
+                    ? from(
+                        prisma.playlistTrack.createMany({
+                          data: itemsToBeCreated.map((trackId) => ({
+                            playlistId: id,
+                            trackId,
+                          })),
+                          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                          // @ts-expect-error
+                          skipDuplicates: true,
                         }),
-                      ),
-                    ),
-                  ),
-                ),
-                map(() => record),
-                catchError((error) => {
-                  console.error(error);
-
-                  return of(record);
-                }),
-              ),
+                      )
+                    : null,
+                  itemsToBeDeleted.length > 0
+                    ? from(
+                        prisma.playlistTrack.deleteMany({
+                          where: {
+                            playlistId: id,
+                            trackId: { in: itemsToBeDeleted },
+                          },
+                        }),
+                      )
+                    : null,
+                ].filter(Boolean) as Observable<Prisma.Prisma.BatchPayload>[],
+              ).pipe(map(() => record)),
             ),
             of(record),
           ),
