@@ -3,9 +3,14 @@ import { from, lastValueFrom } from 'rxjs';
 import { switchMap, map } from 'rxjs/operators';
 import { PrismaClient } from '@prisma/client';
 
+import type { NextRequest } from 'next/server';
+
 const prisma = new PrismaClient();
 
-export async function GET(ctx: RouteContext<'/api/user/[id]'>) {
+export async function GET(
+  req: NextRequest,
+  ctx: RouteContext<'/api/user/[id]'>,
+) {
   const ob$ = from(ctx.params).pipe(
     map(({ id }) => Number(id)),
     switchMap((id) =>
