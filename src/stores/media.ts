@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { persist, createJSONStorage } from 'zustand/middleware';
+import { persist, devtools, createJSONStorage } from 'zustand/middleware';
 import { forkJoin, lastValueFrom } from 'rxjs';
 
 import {
@@ -34,72 +34,74 @@ interface MediaActions {
 export type MusicStore = MediaState & MediaActions;
 
 export const useMediaStore = create<MusicStore>()(
-  persist(
-    (set) => ({
-      tracks: [],
-      artists: [],
-      playlists: [],
-      albums: [],
-      genre: [],
-      setPlaylistId: (id) => set({ playlistId: id }),
-      fetchMusic: async () => {
-        const tracks = await lastValueFrom(fetchTracks$());
+  devtools(
+    persist(
+      (set) => ({
+        tracks: [],
+        artists: [],
+        playlists: [],
+        albums: [],
+        genre: [],
+        setPlaylistId: (id) => set({ playlistId: id }),
+        fetchMusic: async () => {
+          const tracks = await lastValueFrom(fetchTracks$());
 
-        set({ tracks });
+          set({ tracks });
 
-        return tracks;
-      },
-      fetchArtists: async () => {
-        const artists = await lastValueFrom(fetchArtists$());
+          return tracks;
+        },
+        fetchArtists: async () => {
+          const artists = await lastValueFrom(fetchArtists$());
 
-        set({ artists });
+          set({ artists });
 
-        return artists;
-      },
-      fetchPlaylists: async () => {
-        const playlists: Playlist[] = await lastValueFrom(fetchPlaylists$());
+          return artists;
+        },
+        fetchPlaylists: async () => {
+          const playlists: Playlist[] = await lastValueFrom(fetchPlaylists$());
 
-        set({ playlists });
+          set({ playlists });
 
-        return playlists;
-      },
-      fetchAlbums: async () => {
-        const albums: Album[] = await lastValueFrom(fetchAlbums$());
+          return playlists;
+        },
+        fetchAlbums: async () => {
+          const albums: Album[] = await lastValueFrom(fetchAlbums$());
 
-        set({ albums });
+          set({ albums });
 
-        return albums;
-      },
-      fetchGenre: async () => {
-        const genre: Genre[] = await lastValueFrom(fetchGenre$());
+          return albums;
+        },
+        fetchGenre: async () => {
+          const genre: Genre[] = await lastValueFrom(fetchGenre$());
 
-        set({ genre });
+          set({ genre });
 
-        return genre;
-      },
-      fetch: async () => {
-        const ob$ = forkJoin({
-          tracks: fetchTracks$(),
-          artists: fetchArtists$(),
-          albums: fetchAlbums$(),
-          playlists: fetchPlaylists$(),
-          genre: fetchGenre$(),
-        });
+          return genre;
+        },
+        fetch: async () => {
+          const ob$ = forkJoin({
+            tracks: fetchTracks$(),
+            artists: fetchArtists$(),
+            albums: fetchAlbums$(),
+            playlists: fetchPlaylists$(),
+            genre: fetchGenre$(),
+          });
 
-        const { tracks, artists, playlists, albums, genre } =
-          await lastValueFrom(ob$);
+          const { tracks, artists, playlists, albums, genre } =
+            await lastValueFrom(ob$);
 
-        set({ tracks, artists, playlists, albums, genre });
+          set({ tracks, artists, playlists, albums, genre });
 
-        return { tracks, artists, playlists, albums, genre };
-      },
-    }),
-    {
-      name: 'media-storage',
-      storage: createJSONStorage(() => localStorage),
-      partialize: ({ playlistId }) => ({
-        currentPlaylistId: playlistId,
+          return { tracks, artists, playlists, albums, genre };
+        },
       }),
-    },
+      {
+        name: 'media-storage',
+        storage: createJSONStorage(() => localStorage),
+        partialize: ({ playlistId }) => ({
+          currentPlaylistId: playlistId,
+        }),
+      },
+    ),
   ),
 );

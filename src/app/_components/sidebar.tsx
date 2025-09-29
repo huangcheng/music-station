@@ -3,7 +3,7 @@
 import { useMemo } from 'react';
 import { useTranslations } from 'next-intl';
 import { useShallow } from 'zustand/react/shallow';
-import { Settings, Plus, TrendingUp } from 'lucide-react';
+import { Settings, Plus, TrendingUp, LogOut } from 'lucide-react';
 
 import type { ReactElement, HTMLAttributes } from 'react';
 
@@ -11,7 +11,7 @@ import { cn } from '@/lib';
 import { Button, ScrollArea, Badge } from '@/components';
 import { DISCOVER_ITEMS, LIBRARY_ITEMS, NAVIGATION_ITEMS } from '@/constants';
 import { useGlobalStore } from '@/providers';
-import { useMediaStore } from '@/stores';
+import { useMediaStore, useUserStore } from '@/stores';
 
 type SidebarProps = Readonly<HTMLAttributes<HTMLDivElement>>;
 
@@ -23,6 +23,10 @@ export default function Sidebar({
 
   const { nav, setNav } = useGlobalStore(
     useShallow(({ nav, setNav }) => ({ nav, setNav })),
+  );
+
+  const { user, logout } = useUserStore(
+    useShallow(({ user, logout }) => ({ user, logout })),
   );
 
   const { playlists, tracks, artists, albums } = useMediaStore(
@@ -38,6 +42,8 @@ export default function Sidebar({
     () => tracks.filter((track) => track.favorite === true),
     [tracks],
   );
+
+  const isLoggedIn = useMemo(() => (user?.id ?? 0) > 0, [user]);
 
   const libraryItems = useMemo(
     () =>
@@ -173,7 +179,7 @@ export default function Sidebar({
         </div>
 
         {/* Settings */}
-        <div className="pt-4 border-t border-gray-100">
+        <div className="pt-4 border-t border-gray-100 space-y-2">
           <Button
             variant={nav === 'settings' ? 'default' : 'ghost'}
             className={`w-full justify-start gap-3 h-10 transition-all duration-200 ${
@@ -186,6 +192,17 @@ export default function Sidebar({
             <Settings className="h-4 w-4" />
             {t('Settings')}
           </Button>
+
+          {isLoggedIn && (
+            <Button
+              variant="ghost"
+              className="w-full justify-start gap-3 h-10 text-gray-700 hover:bg-red-50 hover:text-red-600 transition-all duration-200"
+              onClick={logout}
+            >
+              <LogOut className="h-4 w-4" />
+              Sign Out
+            </Button>
+          )}
         </div>
       </ScrollArea>
     </div>

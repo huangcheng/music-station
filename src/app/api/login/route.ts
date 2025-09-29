@@ -47,7 +47,7 @@ export async function POST(req: NextRequest) {
             { message: 'Invalid email or password' },
             { status: 401 },
           )
-        : NextResponse.json({ message: 'ok', data: record }),
+        : NextResponse.json({ message: 'ok' }),
     ),
   );
 

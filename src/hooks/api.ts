@@ -1,3 +1,4 @@
+import { redirect } from 'next/navigation';
 import { from } from 'rxjs';
 import { fromFetch } from 'rxjs/fetch';
 import { map } from 'rxjs/operators';
@@ -29,6 +30,10 @@ export const fetch$ = <R>(url: string, init?: RequestInit): Observable<R> =>
     },
     ...(omit(init ?? {}, ['headers']) as RequestInit),
     selector: (response) => {
+      if (response.status === 401) {
+        redirect('/login');
+      }
+
       if (!response.ok) {
         throw new Error(response.statusText);
       }
@@ -81,4 +86,13 @@ export const login$ = (params: LoginRequest) =>
   fetch$<User>('/login', {
     method: 'POST',
     body: JSON.stringify(params),
+  });
+
+export const fetchUser$ = (id: number) => fetch$<User>(`/user/${id}`);
+
+export const fetchSelf$ = () => fetch$<User>('/user');
+
+export const logout$ = () =>
+  fetch$<void>('/logout', {
+    method: 'POST',
   });

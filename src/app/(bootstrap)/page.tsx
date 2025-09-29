@@ -13,9 +13,9 @@ import type { Snapshot } from 'xstate';
 import { useMediaStore } from '@/stores';
 import { playerMachine } from '@/machines';
 
-import { Sidebar, Main, Controls, MainContextProvider } from './_components';
+import { Sidebar, Main, Controls, MainContextProvider } from '../_components';
 
-import type { MainContextProps } from './_components';
+import type { MainContextProps } from '../_components';
 import { useUpdatePlaylistMutation, useUpdateTrackMutation } from '@/hooks';
 
 export default function Home(): ReactElement {

@@ -81,8 +81,11 @@ export async function createSession(userId: number, remember: boolean = false) {
 
 export async function deleteSession() {
   const ob$ = from(cookies()).pipe(
-    switchMap((cookieStore) => of(cookieStore.get('session'))),
-    switchMap((session) =>
+    map((cookieStore) => ({
+      cookieStore,
+      session: cookieStore.get('session'),
+    })),
+    switchMap(({ session, cookieStore }) =>
       iif(
         () => (session?.value ?? '').length > 0,
         defer(() =>
@@ -100,6 +103,7 @@ export async function deleteSession() {
             map(() => true),
             catchError((err) => {
               console.error('Error deleting session:', err);
+
               return of(false);
             }),
           ),
