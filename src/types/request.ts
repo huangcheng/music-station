@@ -26,7 +26,7 @@ export type UpdateTrackRequest = {
   favorite?: boolean;
   playCount?: number;
   recentlyPlayed?: number | null;
-  genre?: number[];
+  genres?: number[];
 };
 
 export type LoginRequest = {

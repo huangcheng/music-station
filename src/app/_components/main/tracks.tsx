@@ -1,17 +1,15 @@
 import { useContext } from 'react';
-import Image from 'next/image';
 import { useShallow } from 'zustand/react/shallow';
-import { Heart, MoreHorizontal, Play } from 'lucide-react';
 import { useTranslations } from 'next-intl';
+import { Heart } from 'lucide-react';
 
 import type { ReactElement } from 'react';
 
 import { useMediaStore } from '@/stores';
-import { Button } from '@/components';
-import { cn, convertToMS } from '@/lib';
 
 import MainContext from './context';
 import Placeholder from './placeholder';
+import TrackList from './track-list';
 
 export default function Tracks(): ReactElement {
   const t = useTranslations();
@@ -36,59 +34,11 @@ export default function Tracks(): ReactElement {
         </div>
       </div>
       {tracks.length > 0 ? (
-        <div className="space-y-1">
-          {tracks.map(
-            ({ id, name, cover, artist, duration, favorite }, index) => (
-              <div
-                key={id}
-                className="flex items-center gap-4 p-3 rounded hover:bg-muted/50 group"
-              >
-                <span className="w-4 text-sm text-muted-foreground">
-                  {index + 1}
-                </span>
-                <Image
-                  src={cover || '/images/abstract-geometric-shapes.png'}
-                  alt={name}
-                  width={40}
-                  height={40}
-                  className="rounded object-cover"
-                />
-                <div className="flex-1 min-w-0">
-                  <h3 className="font-medium truncate">{name}</h3>
-                  <p className="text-sm text-muted-foreground truncate">
-                    {artist}
-                  </p>
-                </div>
-                <span className="text-sm text-muted-foreground">
-                  {convertToMS(duration ?? 0)}
-                </span>
-                <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    className={cn(
-                      '!hover:text-accent',
-                      favorite ? 'text-accent' : '',
-                    )}
-                    onClick={() => onFavoriteToggle?.(id, !favorite)}
-                  >
-                    <Heart className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => onPlay?.(id)}
-                  >
-                    <Play className="h-4 w-4" />
-                  </Button>
-                  <Button size="sm" variant="ghost">
-                    <MoreHorizontal className="h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
-            ),
-          )}
-        </div>
+        <TrackList
+          tracks={tracks}
+          onPlay={onPlay}
+          onFavoriteToggle={onFavoriteToggle}
+        />
       ) : (
         <Placeholder />
       )}

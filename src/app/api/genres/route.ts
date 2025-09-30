@@ -14,15 +14,15 @@ export async function GET() {
       orderBy: { createdAt: 'asc' },
     }),
   ).pipe(
-    switchMap((genre) =>
+    switchMap((genres) =>
       iif(
-        () => genre.length > 0,
+        () => genres.length > 0,
         defer(() =>
           forkJoin(
-            genre.map((g) =>
+            genres.map((genre) =>
               from(
                 prisma.trackGenre.findMany({
-                  where: { genreId: g.id },
+                  where: { genreId: genre.id },
                   include: {
                     track: true,
                   },
@@ -31,7 +31,7 @@ export async function GET() {
               ).pipe(
                 map((records) => records.map(({ track }) => track)),
                 map((tracks) => ({
-                  ...g,
+                  ...genre,
                   tracks: tracks.map((track) => ({
                     ...omit(track, ['hash', 'albumId', 'artistId']),
                     file: `/api/upload?file=${encodeURIComponent(track.file)}`,

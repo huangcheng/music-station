@@ -5,7 +5,15 @@ import { useTranslations } from 'next-intl';
 import { useImmer } from 'use-immer';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { MoreVertical, Pencil, Trash2, Plus, Play } from 'lucide-react';
+import dayjs from 'dayjs';
+import {
+  MoreVertical,
+  Pencil,
+  Trash2,
+  Plus,
+  Play,
+  MoveLeft,
+} from 'lucide-react';
 
 import { useMediaStore } from '@/stores';
 import {
@@ -53,10 +61,12 @@ import type { CreatePlaylist, UpdatePlaylist } from '@/schemas';
 
 import MainContext from './context';
 import Placeholder from './placeholder';
+import TrackList from './track-list';
 
 type State = {
   // Selected playlist ID for action
   playlistId: number | null;
+  selectedPlaylistId: number | null;
   action: 'create' | 'update' | 'delete' | null;
 };
 
@@ -66,11 +76,12 @@ export default function Library() {
   const [state, setState] = useImmer<State>({
     playlistId: null,
     action: null,
+    selectedPlaylistId: null,
   });
 
-  const { playlistId, action } = state;
+  const { playlistId, action, selectedPlaylistId } = state;
 
-  const { onPlayPlaylist } = useContext(MainContext);
+  const { onPlayPlaylist, onPlay, onFavoriteToggle } = useContext(MainContext);
 
   const { playlists, tracks, fetchPlaylists } = useMediaStore(
     useShallow(({ playlists, tracks, fetchPlaylists }) => ({
@@ -110,7 +121,17 @@ export default function Library() {
     [playlists, playlistId],
   );
 
+  const selectedPlaylist = useMemo(
+    () => playlists.find(({ id }) => id === selectedPlaylistId) ?? null,
+    [playlists, selectedPlaylistId],
+  );
+
   const _tracks = useMemo(() => playlist?.tracks, [playlist]);
+
+  const selectedTracks = useMemo(
+    () => selectedPlaylist?.tracks ?? [],
+    [selectedPlaylist],
+  );
 
   useEffect(() => {
     updatePlaylistFrom.setValue('tracks', _tracks?.map(({ id }) => id) ?? []);
@@ -148,26 +169,51 @@ export default function Library() {
         <Button
           onClick={() =>
             setState((draft) => {
-              draft.action = 'create';
+              if (draft.selectedPlaylistId === null) {
+                draft.action = 'create';
+              } else {
+                draft.selectedPlaylistId = null;
+              }
             })
           }
         >
-          <Plus className="mr-2 h-4 w-4" />
-          {t('Create Playlist')}
+          {selectedPlaylist === null ? (
+            <Plus className="mr-2 h-4 w-4" />
+          ) : (
+            <MoveLeft className="mr-2 h-4 w-4" />
+          )}
+          {t(selectedPlaylist === null ? 'New Playlist' : 'Back to Playlists')}
         </Button>
       </div>
-      {playlists.length > 0 ? (
+      {playlists.length > 0 && selectedPlaylistId === null && (
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
           {playlists
-            .sort((a, b) => a.id - b.id)
-            .map((playlist) => {
+            .sort((a, b) => {
+              if (a.internal && !b.internal) {
+                return -1;
+              }
+              if (!a.internal && b.internal) {
+                return 1;
+              }
+              return dayjs(b.createdAt).diff(dayjs(a.createdAt));
+            })
+            .map(({ id, internal, name, tracks }) => {
               const card = (
                 <Card
-                  key={playlist.id}
+                  key={id}
                   className="group hover:bg-card/80 transition-colors"
+                  onClick={() => {
+                    if (tracks.length === 0) {
+                      return;
+                    }
+
+                    setState((draft) => {
+                      draft.selectedPlaylistId = id;
+                    });
+                  }}
                 >
                   <CardContent className="p-4 relative">
-                    {!playlist.internal && (
+                    {!internal && (
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <Button
@@ -182,7 +228,7 @@ export default function Library() {
                           <DropdownMenuItem
                             onClick={() =>
                               setState((draft) => {
-                                draft.playlistId = playlist.id;
+                                draft.playlistId = id;
                                 draft.action = 'update';
                               })
                             }
@@ -193,7 +239,7 @@ export default function Library() {
                           <DropdownMenuItem
                             onClick={() =>
                               setState((draft) => {
-                                draft.playlistId = playlist.id;
+                                draft.playlistId = id;
                                 draft.action = 'delete';
                               })
                             }
@@ -208,10 +254,10 @@ export default function Library() {
                     <div className="aspect-square w-full bg-muted rounded mb-4 flex items-center justify-center cursor-pointer relative overflow-hidden">
                       <Image
                         src={
-                          playlist.tracks.find(({ cover }) => cover)?.cover ??
+                          tracks.find(({ cover }) => cover)?.cover ??
                           '/images/abstract-geometric-shapes.png'
                         }
-                        alt={playlist.name}
+                        alt={name}
                         width={200}
                         height={200}
                         className="object-fill w-full aspect-square rounded"
@@ -223,7 +269,7 @@ export default function Library() {
                         onClick={(e) => {
                           e.stopPropagation();
 
-                          onPlayPlaylist?.(playlist.id);
+                          onPlayPlaylist?.(id);
                         }}
                         aria-label={t('Play Playlist')}
                         tabIndex={0}
@@ -232,27 +278,27 @@ export default function Library() {
                       </Button>
                     </div>
                     <h3 className="font-semibold truncate cursor-pointer">
-                      {playlist.name}
+                      {name}
                     </h3>
                     <p className="text-sm text-muted-foreground cursor-pointer">
-                      {playlist.name} • {playlist.tracks.length} {t('songs')}
+                      {name} • {tracks.length} {t('songs')}
                     </p>
                   </CardContent>
                 </Card>
               );
 
-              if (playlist.internal) {
+              if (internal) {
                 return card;
               }
 
               return (
-                <ContextMenu key={playlist.id}>
+                <ContextMenu key={id}>
                   <ContextMenuTrigger>{card}</ContextMenuTrigger>
                   <ContextMenuContent>
                     <ContextMenuItem
                       onClick={() =>
                         setState((draft) => {
-                          draft.playlistId = playlist.id;
+                          draft.playlistId = id;
                         })
                       }
                     >
@@ -262,7 +308,7 @@ export default function Library() {
                     <ContextMenuItem
                       onClick={() =>
                         setState((draft) => {
-                          draft.playlistId = playlist.id;
+                          draft.playlistId = id;
                           draft.action = 'delete';
                         })
                       }
@@ -276,7 +322,18 @@ export default function Library() {
               );
             })}
         </div>
-      ) : (
+      )}
+
+      {selectedPlaylistId !== null && selectedTracks.length > 0 && (
+        <TrackList
+          tracks={selectedTracks}
+          onPlay={onPlay}
+          onFavoriteToggle={onFavoriteToggle}
+        />
+      )}
+
+      {((playlists.length === 0 && selectedPlaylistId === null) ||
+        (selectedPlaylist !== null && selectedTracks.length === 0)) && (
         <Placeholder />
       )}
 

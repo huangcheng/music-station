@@ -80,7 +80,7 @@ export const updateTrack$ = (
     body: JSON.stringify(params),
   });
 
-export const fetchGenre$ = () => fetch$<Genre[]>('/genre');
+export const fetchGenres$ = () => fetch$<Genre[]>('/genres');
 
 export const login$ = (params: LoginRequest) =>
   fetch$<User>('/login', {

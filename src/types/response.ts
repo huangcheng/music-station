@@ -15,7 +15,7 @@ export type Track = {
   disk?: number;
   year?: number;
   date?: string;
-  genre: string[];
+  genres: string[];
   cover: string;
   file: string;
   codec?: string;

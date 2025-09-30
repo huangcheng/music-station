@@ -30,9 +30,9 @@ export async function GET() {
                   orderBy: { createdAt: 'asc' },
                 }),
               ).pipe(
-                map((genre) => ({
+                map((genres) => ({
                   ...track,
-                  genre,
+                  genres,
                 })),
               ),
             ),
@@ -49,7 +49,7 @@ export async function GET() {
               tracks.map((track) => {
                 const record = {
                   ...track,
-                  genre: track.genre.map((g) => g.genre.name),
+                  genres: track.genres.map((genre) => genre.genre.name),
                   artist: track.artist?.name ?? t('Unknown Artist'),
                   album: track.album?.name ?? t('Unknown Album'),
                 };
@@ -71,7 +71,7 @@ export async function GET() {
           : undefined,
       })),
     ),
-    map((music) => NextResponse.json({ data: music })),
+    map((tracks) => NextResponse.json({ data: tracks })),
     catchError(() => of(NextResponse.json({ data: [] }))),
   );
 

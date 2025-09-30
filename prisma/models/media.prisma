@@ -58,7 +58,7 @@ model Track {
   playCount        Int      @default(0)
   recentlyPlayed   Int?
 
-  genre TrackGenre[]
+  genres TrackGenre[]
 
   album     Album?          @relation(fields: [albumId], references: [id])
   artist    Artist?         @relation(fields: [artistId], references: [id])

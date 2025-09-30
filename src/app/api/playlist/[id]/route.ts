@@ -61,9 +61,6 @@ export async function PUT(
                             playlistId: id,
                             trackId,
                           })),
-                          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                          // @ts-expect-error
-                          skipDuplicates: true,
                         }),
                       )
                     : null,

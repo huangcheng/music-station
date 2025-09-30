@@ -22,18 +22,18 @@ export async function PUT(
       from(
         prisma.track.update({
           where: { id },
-          data: omit(body, ['genre']),
+          data: omit(body, ['genres']),
         }),
       ).pipe(
         switchMap((record) =>
           iif(
-            () => (body.genre ?? []).length > 0,
+            () => (body.genres ?? []).length > 0,
             defer(() =>
               from(prisma.trackGenre.deleteMany({ where: { trackId: id } })),
             ).pipe(
               switchMap(() =>
                 forkJoin(
-                  (body.genre ?? []).map((genre) =>
+                  (body.genres ?? []).map((genre) =>
                     from(
                       prisma.trackGenre.create({
                         data: { trackId: id, genreId: genre },

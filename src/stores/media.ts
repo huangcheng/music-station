@@ -7,7 +7,7 @@ import {
   fetchTracks$,
   fetchPlaylists$,
   fetchAlbums$,
-  fetchGenre$,
+  fetchGenres$,
 } from '@/hooks';
 
 import type { Album, Artist, Track, Playlist, Genre } from '@/types';
@@ -72,7 +72,7 @@ export const useMediaStore = create<MusicStore>()(
           return albums;
         },
         fetchGenre: async () => {
-          const genre: Genre[] = await lastValueFrom(fetchGenre$());
+          const genre: Genre[] = await lastValueFrom(fetchGenres$());
 
           set({ genre });
 
@@ -84,7 +84,7 @@ export const useMediaStore = create<MusicStore>()(
             artists: fetchArtists$(),
             albums: fetchAlbums$(),
             playlists: fetchPlaylists$(),
-            genre: fetchGenre$(),
+            genre: fetchGenres$(),
           });
 
           const { tracks, artists, playlists, albums, genre } =
