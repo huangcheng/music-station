@@ -41,7 +41,7 @@
     "@wavesurfer/react": "^1.0.11",
     "@xstate/react": "^6.0.0",
     "ahooks": "^3.9.5",
-    "animejs": "^4.1.4",
+    "animejs": "^4.2.0",
     "bcrypt": "^6.0.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
