@@ -2,10 +2,15 @@ import { defer, forkJoin, from, iif, lastValueFrom, of } from 'rxjs';
 import { catchError, map, switchMap } from 'rxjs/operators';
 import { hash } from 'bcrypt';
 import { PrismaClient } from '@prisma/client';
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 import type { Observable } from 'rxjs';
 
 const prisma = new PrismaClient();
+
+const saltRounds = Number(process.env.NEXT_PUBLIC_BCRYPT_SALT_ROUNDS ?? 12);
 
 const seedPlaylist = (): Observable<boolean> =>
   from(prisma.playlist.findMany()).pipe(
@@ -39,13 +44,13 @@ const seedUser = (): Observable<boolean> =>
     switchMap((records) =>
       iif(
         () => records.length === 0,
-        defer(() => from(hash('admin', 16))).pipe(
+        defer(() => from(hash('admin', saltRounds))).pipe(
           switchMap((password) =>
             from(
               prisma.user.create({
                 data: {
-                  name: 'Admin',
-                  email: 'admin@example.com',
+                  name: 'admin',
+                  displayName: 'Administrator',
                   password,
                 },
               }),

@@ -102,8 +102,9 @@ CREATE TABLE "Session" (
 -- CreateTable
 CREATE TABLE "User" (
     "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-    "email" TEXT NOT NULL,
+    "email" TEXT,
     "name" TEXT NOT NULL,
+    "displayName" TEXT,
     "password" TEXT NOT NULL,
     "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" DATETIME NOT NULL
@@ -123,3 +124,6 @@ CREATE UNIQUE INDEX "Track_hash_key" ON "Track"("hash");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "User_name_key" ON "User"("name");

@@ -30,7 +30,7 @@ export type UpdateTrackRequest = {
 };
 
 export type LoginRequest = {
-  email: string;
+  name: string;
   password: string;
   remember?: boolean;
 };

@@ -15,10 +15,10 @@ const prisma = new PrismaClient();
 
 export async function POST(req: NextRequest) {
   const ob$ = from<Promise<LoginRequest>>(req.json()).pipe(
-    switchMap(({ email, password, remember }) =>
+    switchMap(({ name, password, remember }) =>
       from(
         prisma.user.findUnique({
-          where: { email },
+          where: { name },
         }),
       ).pipe(
         map((record) => ({ record, remember })),
@@ -44,7 +44,7 @@ export async function POST(req: NextRequest) {
     map((record) =>
       record === null
         ? NextResponse.json(
-            { message: 'Invalid email or password' },
+            { message: 'Invalid user name or password' },
             { status: 401 },
           )
         : NextResponse.json({ message: 'ok' }),

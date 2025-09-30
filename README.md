@@ -22,7 +22,13 @@ You will need to set up the following environment variables in a `.env.local` fi
 
 ```bash
 # The location of your storage directory, tracks and database will be stored here.
+# Default is "data" directory in the project root.
+# You can change this to any absolute path on your system.
+# Example: /mnt/music or C:\Music
 NEXT_PUBLIC_STORAGE_PREFIX="/data"
+
+# Number of salt rounds for password hashing. Default is 12.
+NEXT_PUBLIC_BCRYPT_SALT_ROUNDS=12
 
 # The URL of your database. For SQLite, you can use the following format:
 DATABASE_URL="file:./dev.db"

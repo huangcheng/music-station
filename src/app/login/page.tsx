@@ -1,10 +1,12 @@
 'use client';
 
+import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useImmer } from 'use-immer';
 import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Music, Eye, EyeOff, Mail, Lock, ArrowRight } from 'lucide-react';
+import { useShallow } from 'zustand/react/shallow';
+import { Music, Eye, EyeOff, Lock, ArrowRight, User } from 'lucide-react';
 
 import {
   Button,
@@ -19,20 +21,28 @@ import {
 } from '@/components';
 import { loginSchema } from '@/schemas';
 import { useLoginMutation } from '@/hooks';
+import { useUserStore } from '@/stores';
 
 export default function Login() {
   const router = useRouter();
 
+  const { cache, setCache } = useUserStore(
+    useShallow(({ cache, setCache }) => ({ cache, setCache })),
+  );
+
+  const { name, remember } = cache;
+
   const {
     control,
     formState: { errors },
+    setValue,
     handleSubmit,
   } = useForm({
     resolver: zodResolver(loginSchema),
     defaultValues: {
-      email: '',
+      name,
       password: '',
-      remember: false,
+      remember,
     },
   });
 
@@ -47,6 +57,14 @@ export default function Login() {
   });
 
   const { showPassword } = state;
+
+  useEffect(() => {
+    setValue('name', name);
+  }, [name, setValue]);
+
+  useEffect(() => {
+    setValue('remember', remember);
+  }, [remember, setValue]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-orange-50 flex items-center justify-center p-4">
@@ -94,25 +112,24 @@ export default function Login() {
                 <form
                   onSubmit={handleSubmit((data) => {
                     mutate(data);
+
+                    setCache({ name: data.name, remember: data.remember });
                   })}
                   className="space-y-4"
                 >
                   <div className="space-y-2">
-                    <Label
-                      htmlFor="email"
-                      className="text-gray-700 font-medium"
-                    >
-                      Email
+                    <Label htmlFor="name" className="text-gray-700 font-medium">
+                      User Name
                     </Label>
                     <div className="relative">
-                      <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                      <User className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                       <Controller
-                        name="email"
+                        name="name"
                         control={control}
                         render={({ field }) => (
                           <Input
                             // type="email"
-                            placeholder="Enter your email"
+                            placeholder="Enter your user name"
                             className="pl-10 border-gray-200 focus:border-orange-500 focus:ring-orange-500"
                             {...field}
                           />
@@ -120,9 +137,9 @@ export default function Login() {
                       />
                     </div>
                   </div>
-                  {errors.email && (
+                  {errors.name && (
                     <p className="text-sm text-red-500">
-                      {errors.email.message}
+                      {errors.name.message}
                     </p>
                   )}
                   <div className="space-y-2">
@@ -188,7 +205,9 @@ export default function Login() {
                             type="checkbox"
                             className="rounded border-gray-300 text-orange-500 focus:ring-orange-500"
                             checked={value}
-                            onChange={(e) => onChange(e.target.checked)}
+                            onChange={(e) => {
+                              onChange(e.target.checked);
+                            }}
                           />
                         )}
                       />

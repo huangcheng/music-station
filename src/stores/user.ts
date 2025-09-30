@@ -13,7 +13,7 @@ interface UserState {
   };
   isLoggedIn?: boolean;
   cache: {
-    email: string;
+    name: string;
     remember: boolean;
   };
 }
@@ -29,7 +29,7 @@ export type UserStore = UserState & UserActions;
 const initialState: UserState = {
   user: undefined,
   cache: {
-    email: '',
+    name: '',
     remember: false,
   },
 };
@@ -59,7 +59,9 @@ export const useUserStore = create<UserStore>()(
       {
         name: 'user-storage',
         storage: createJSONStorage(() => localStorage),
-        partialize: ({ cache }) => ({ cache }),
+        partialize: ({ cache: { name, remember } }) => ({
+          cache: { remember, name: remember ? name : '' },
+        }),
       },
     ),
   ),
