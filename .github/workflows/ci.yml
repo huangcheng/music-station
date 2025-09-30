@@ -8,6 +8,8 @@ on:
 jobs:
   lint-test-build:
     runs-on: ubuntu-latest
+    env:
+      SESSION_SECRET: ${{ secrets.SESSION_SECRET }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
