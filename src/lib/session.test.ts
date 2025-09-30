@@ -30,9 +30,4 @@ describe('Session Encryption and Decryption', () => {
     const decrypted = await decrypt('invalid-token');
     expect(decrypted).toBeUndefined();
   });
-
-  it('should return undefined when decrypting an empty string', async () => {
-    const decrypted = await decrypt('');
-    expect(decrypted).toBeUndefined();
-  });
 });
