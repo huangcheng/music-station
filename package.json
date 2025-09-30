@@ -71,7 +71,7 @@
     "zustand": "^5.0.8"
   },
   "devDependencies": {
-    "@commitlint/cli": "^19.8.1",
+    "@commitlint/cli": "^20.0.0",
     "@commitlint/config-conventional": "^19.8.1",
     "@cspell/eslint-plugin": "^9.2.1",
     "@eslint/config-helpers": "^0.3.1",
