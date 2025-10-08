@@ -169,8 +169,8 @@ importers:
         specifier: ^9.2.1
         version: 9.2.1(eslint@9.37.0(jiti@2.6.1))
       '@eslint/config-helpers':
-        specifier: ^0.3.1
-        version: 0.3.1
+        specifier: ^0.4.0
+        version: 0.4.0
       '@eslint/eslintrc':
         specifier: ^3.3.1
         version: 3.3.1
@@ -915,10 +915,6 @@ packages:
 
   '@eslint/config-array@0.21.0':
     resolution: {integrity: sha512-ENIdc4iLu0d93HeYirvKmrzshzofPw6VkZRKQGe9Nv46ZnWUzcF1xV01dcvEg/1wXUR61OmmlSfyeyO7EvjLxQ==}
-    engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
-
-  '@eslint/config-helpers@0.3.1':
-    resolution: {integrity: sha512-xR93k9WhrDYpXHORXpxVL5oHj3Era7wo6k/Wd8/IsQNnZUTzkGS29lyn3nAT05v6ltUuTFVCCYDEGfy2Or/sPA==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
 
   '@eslint/config-helpers@0.4.0':
@@ -6254,8 +6250,6 @@ snapshots:
       minimatch: 3.1.2
     transitivePeerDependencies:
       - supports-color
-
-  '@eslint/config-helpers@0.3.1': {}
 
   '@eslint/config-helpers@0.4.0':
     dependencies:
