@@ -110,6 +110,7 @@ export default function Login() {
 
               <TabsContent value="login" className="space-y-4">
                 <form
+                  data-testid="login-form"
                   onSubmit={handleSubmit((data) => {
                     mutate(data);
 
@@ -128,7 +129,7 @@ export default function Login() {
                         control={control}
                         render={({ field }) => (
                           <Input
-                            // type="email"
+                            data-testid="name-input"
                             placeholder="Enter your user name"
                             className="pl-10 border-gray-200 focus:border-orange-500 focus:ring-orange-500"
                             {...field}
@@ -156,6 +157,7 @@ export default function Login() {
                         control={control}
                         render={({ field }) => (
                           <Input
+                            data-testid="password-input"
                             type={showPassword ? 'text' : 'password'}
                             placeholder="Enter your password"
                             className="pl-10 pr-10 border-gray-200 focus:border-orange-500 focus:ring-orange-500"
@@ -222,6 +224,7 @@ export default function Login() {
                   </div>
 
                   <Button
+                    data-testid="submit-button"
                     type="submit"
                     className="w-full bg-orange-500 hover:bg-orange-600 text-white font-medium py-2.5 music-button-hover"
                     disabled={isPending}

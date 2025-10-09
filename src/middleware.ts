@@ -1,13 +1,10 @@
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
-import { PrismaClient } from '@prisma/client';
 import dayjs from 'dayjs';
 
 import type { NextRequest } from 'next/server';
 
-import { decrypt, deleteSession } from './lib/session';
-
-const prisma = new PrismaClient();
+import { decrypt } from './lib/session';
 
 const protectedRoutes = new Set(['/', '/dashboard']);
 const publicRoutes = new Set(['/login', '/api/login']);
@@ -21,23 +18,16 @@ export default async function middleware(req: NextRequest) {
   const cookie = (await cookies()).get('session')?.value;
   const session = await decrypt(cookie);
 
-  if (isProtectedRoute && !session?.id) {
-    return NextResponse.redirect(new URL('/login', req.nextUrl));
-  }
-
   const { id, expires } = session ?? {};
 
-  const record = prisma.session.findUnique({
-    where: { id },
-  });
-
-  if (record === null || dayjs(expires).isBefore(dayjs())) {
-    await deleteSession();
-
+  if (
+    isProtectedRoute &&
+    (!id || !expires || dayjs().isAfter(dayjs(expires)))
+  ) {
     return NextResponse.redirect(new URL('/login', req.nextUrl));
   }
 
-  if (isPublicRoute && !/\//.test(req.nextUrl.pathname)) {
+  if (isPublicRoute && id) {
     return NextResponse.redirect(new URL('/', req.nextUrl));
   }
 
