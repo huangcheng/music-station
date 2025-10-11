@@ -1,7 +1,12 @@
 {
   "name": "music-station",
   "version": "0.1.0",
-  "private": true,
+  "private": false,
+  "author": "HUANG Cheng <cheng@duck.com>",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/huangcheng/music-station"
+  },
   "type": "module",
   "scripts": {
     "dev": "next dev --turbopack",
