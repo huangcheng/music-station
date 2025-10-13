@@ -125,5 +125,7 @@
   "Modify Playlist": "修改播放列表",
   "Are you sure?": "您确定吗？",
   "This action cannot be undone, this will permanently delete the playlist": "此操作无法撤销，将永久删除该播放列表",
-  "Play Playlist": "播放此播放列表"
+  "Play Playlist": "播放此播放列表",
+  "Back to Albums": "返回专辑列表",
+  "Back to Artists": "返回艺术家列表"
 }
