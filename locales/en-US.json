@@ -127,5 +127,7 @@
   "Are you sure?": "Are you sure?",
   "This action cannot be undone, this will permanently delete the playlist": "This action cannot be undone, this will permanently delete the playlist",
   "Back to Albums": "Back to Albums",
-  "Back to Artists": "Back to Artists"
+  "Back to Artists": "Back to Artists",
+  "Play Album": "Play Album",
+  "Play Artist": "Play Artist"
 }

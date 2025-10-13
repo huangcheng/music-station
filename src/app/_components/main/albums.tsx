@@ -4,7 +4,7 @@ import { useContext, useMemo } from 'react';
 import { useImmer } from 'use-immer';
 import Image from 'next/image';
 import { useShallow } from 'zustand/react/shallow';
-import { Heart, MoreHorizontal, MoveLeft } from 'lucide-react';
+import { Heart, MoreHorizontal, MoveLeft, Play } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
 import type { ReactElement } from 'react';
@@ -26,7 +26,7 @@ export default function Albums(): ReactElement {
     })),
   );
 
-  const { onPlay, onFavoriteToggle } = useContext(MainContext);
+  const { onPlay, onFavoriteToggle, onPlayTracks } = useContext(MainContext);
 
   const [state, setState] = useImmer<State>({ selectedAlbumId: null });
 
@@ -70,16 +70,33 @@ export default function Albums(): ReactElement {
                 })
               }
             >
-              <Image
-                src={
-                  tracks.find(({ cover }) => (cover ?? '').length > 0)?.cover ??
-                  '/images/abstract-geometric-shapes.png'
-                }
-                alt={name}
-                width={48}
-                height={48}
-                className="rounded object-cover"
-              />
+              <div className="relative">
+                <Image
+                  src={
+                    tracks.find(({ cover }) => (cover ?? '').length > 0)
+                      ?.cover ?? '/images/abstract-geometric-shapes.png'
+                  }
+                  alt={name}
+                  width={48}
+                  height={48}
+                  className="rounded object-cover"
+                />
+                {/* Play button overlay */}
+                <Button
+                  size="icon"
+                  className="absolute inset-0 m-auto h-8 w-8 rounded-full bg-primary text-white opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (tracks.length > 0) {
+                      onPlayTracks?.(tracks);
+                    }
+                  }}
+                  aria-label={t('Play Album')}
+                  tabIndex={0}
+                >
+                  <Play className="h-4 w-4" />
+                </Button>
+              </div>
               <div className="flex-1 min-w-0">
                 <h3 className="font-medium truncate">{name}</h3>
                 <p className="text-sm text-muted-foreground truncate">

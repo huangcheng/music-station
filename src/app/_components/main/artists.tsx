@@ -3,7 +3,7 @@
 import Image from 'next/image';
 import { useShallow } from 'zustand/react/shallow';
 import { useTranslations } from 'next-intl';
-import { MoveLeft } from 'lucide-react';
+import { MoveLeft, Play } from 'lucide-react';
 import { useContext, useMemo } from 'react';
 import { useImmer } from 'use-immer';
 
@@ -20,7 +20,7 @@ export default function Artists() {
   const t = useTranslations();
   const { artists } = useMediaStore(useShallow(({ artists }) => ({ artists })));
 
-  const { onPlay, onFavoriteToggle } = useContext(MainContext);
+  const { onPlay, onFavoriteToggle, onPlayTracks } = useContext(MainContext);
 
   const [state, setState] = useImmer<State>({ selectedArtistId: null });
 
@@ -67,7 +67,7 @@ export default function Artists() {
               }
             >
               <CardContent className="p-4 text-center">
-                <div className="aspect-square bg-muted rounded-full mb-4 overflow-hidden">
+                <div className="aspect-square bg-muted rounded-full mb-4 overflow-hidden relative">
                   <Image
                     src={
                       tracks?.find(({ cover }) => cover)?.cover ??
@@ -78,6 +78,21 @@ export default function Artists() {
                     height={200}
                     className="object-cover w-full aspect-square"
                   />
+                  <Button
+                    size="icon"
+                    className="absolute inset-0 m-auto h-10 w-10 rounded-full bg-primary text-white opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      const list = tracks ?? [];
+                      if (list.length > 0) {
+                        onPlayTracks?.(list);
+                      }
+                    }}
+                    aria-label={t('Play Artist')}
+                    tabIndex={0}
+                  >
+                    <Play className="h-5 w-5" />
+                  </Button>
                 </div>
                 <h3 className="font-semibold truncate">{name}</h3>
                 <p className="text-sm text-muted-foreground">{t('Artist')}</p>

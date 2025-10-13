@@ -9,6 +9,7 @@ import { useLocalStorage, useMount } from 'react-use';
 import type { ReactElement } from 'react';
 import type { Scope } from 'animejs';
 import type { Snapshot } from 'xstate';
+import type { Track } from '@/types';
 
 import { useMediaStore } from '@/stores';
 import { playerMachine } from '@/machines';
@@ -138,6 +139,26 @@ export default function Home(): ReactElement {
     [playlists, send],
   );
 
+  const handlePlayTracks = useCallback(
+    (tracks: Track[]) => {
+      if (!tracks || tracks.length === 0) {
+        return;
+      }
+
+      // Replace default playlist items
+      updatePlaylist({
+        id: defaultPlaylist?.id,
+        params: { tracks: tracks.map((t) => t.id) },
+      });
+
+      // Set tracks into player and start first
+      send({ type: 'SET_TRACKS', tracks });
+      send({ type: 'SET_TRACK', id: tracks[0].id });
+      send({ type: 'PLAY' });
+    },
+    [defaultPlaylist?.id, send, updatePlaylist],
+  );
+
   const handleFavoriteToggle = useCallback(
     (id: number, favorite: boolean): void =>
       updateTrack({ id, params: { favorite } }),
@@ -149,9 +170,16 @@ export default function Home(): ReactElement {
       playerContext: context,
       onPlay: handlePlay,
       onPlayPlaylist: handlePlayPlaylist,
+      onPlayTracks: handlePlayTracks,
       onFavoriteToggle: handleFavoriteToggle,
     }),
-    [context, handlePlay, handleFavoriteToggle, handlePlayPlaylist],
+    [
+      context,
+      handlePlay,
+      handleFavoriteToggle,
+      handlePlayPlaylist,
+      handlePlayTracks,
+    ],
   );
 
   useEffect(() => {
