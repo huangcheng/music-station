@@ -91,9 +91,27 @@ export default function Settings(): ReactElement {
     { raw: true },
   );
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [userStore, _4, clearUserStore] = useLocalStorage<string>(
+    'user-storage',
+    '',
+    { raw: true },
+  );
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [globalStore, _5, clearGlobalStore] = useLocalStorage<string>(
+    'global-storage',
+    '',
+    { raw: true },
+  );
+
   const storeSize = useMemo(
-    () => getStrSize(mediaStore ?? '') + getStrSize(settingsStore ?? ''),
-    [mediaStore, settingsStore],
+    () =>
+      getStrSize(mediaStore ?? '') +
+      getStrSize(settingsStore ?? '') +
+      getStrSize(userStore ?? '') +
+      getStrSize(globalStore ?? ''),
+    [mediaStore, settingsStore, userStore, globalStore],
   );
   const stateSize = useMemo(() => getStrSize(playerState ?? ''), [playerState]);
   const totalSize = useMemo(
@@ -104,8 +122,26 @@ export default function Settings(): ReactElement {
   const handleClearCache = useCallback(() => {
     clearMediaStore();
     clearSettingsStore();
+    clearUserStore();
+    clearGlobalStore();
     clearPlayerState();
-  }, [clearMediaStore, clearSettingsStore, clearPlayerState]);
+
+    // reset in-memory settings to defaults
+    try {
+      useSettingsStore.getState().resetSettings();
+    } catch {}
+
+    // force a reload so all in-memory stores rehydrate from fresh storage
+    if (globalThis.window !== undefined) {
+      setTimeout(() => globalThis.location.reload(), 50);
+    }
+  }, [
+    clearMediaStore,
+    clearSettingsStore,
+    clearUserStore,
+    clearGlobalStore,
+    clearPlayerState,
+  ]);
 
   const submit = useCallback(
     async () =>

@@ -99,7 +99,7 @@ export const useMediaStore = create<MusicStore>()(
         name: 'media-storage',
         storage: createJSONStorage(() => localStorage),
         partialize: ({ playlistId }) => ({
-          currentPlaylistId: playlistId,
+          playlistId,
         }),
       },
     ),
