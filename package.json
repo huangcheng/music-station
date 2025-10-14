@@ -12,7 +12,6 @@
     "dev": "next dev --turbopack",
     "build": "next build --turbopack",
     "start": "next start",
-    "vercel-build": "prisma generate && prisma migrate deploy && tsx ./prisma/seed.ts && next build",
     "prisma": "prisma generate && prisma migrate deploy && tsx ./prisma/seed.ts",
     "prisma:generate": "prisma generate",
     "lint": "eslint src --ext .ts,.tsx",
@@ -24,7 +23,7 @@
     "playwright": "playwright test",
     "playwright:report": "playwright show-report",
     "playwright:ui": "playwright test --ui",
-    "postinstall": "prisma generate && tsx ./prisma/seed.ts"
+    "postinstall": "prisma generate && prisma migrate deploy && tsx ./prisma/seed.ts"
   },
   "dependencies": {
     "@floating-ui/react": "^0.27.16",
