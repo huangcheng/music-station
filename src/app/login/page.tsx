@@ -7,6 +7,7 @@ import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useShallow } from 'zustand/react/shallow';
 import { Music, Eye, EyeOff, Lock, ArrowRight, User } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 import {
   Button,
@@ -25,6 +26,7 @@ import { useUserStore } from '@/stores';
 
 export default function Login() {
   const router = useRouter();
+  const t = useTranslations();
 
   const { cache, setCache } = useUserStore(
     useShallow(({ cache, setCache }) => ({ cache, setCache })),
@@ -75,17 +77,17 @@ export default function Login() {
             <Music className="w-8 h-8 text-orange-500" />
           </div>
           <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            Music Player
+            {t('Music Player')}
           </h1>
           <p className="text-gray-600">
-            Sign in to access your personal music library
+            {t('Sign in to access your personal music library')}
           </p>
         </div>
 
         <Card className="shadow-xl border-0 bg-white/80 backdrop-blur-sm">
           <CardHeader className="space-y-1 pb-4">
             <CardTitle className="text-2xl text-center text-gray-900">
-              Welcome
+              {t('Welcome')}
             </CardTitle>
             {/*<CardDescription className="text-center text-gray-600">*/}
             {/*  Choose your preferred way to continue*/}
@@ -120,7 +122,7 @@ export default function Login() {
                 >
                   <div className="space-y-2">
                     <Label htmlFor="name" className="text-gray-700 font-medium">
-                      User Name
+                      {t('User Name')}
                     </Label>
                     <div className="relative">
                       <User className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
@@ -130,7 +132,7 @@ export default function Login() {
                         render={({ field }) => (
                           <Input
                             data-testid="name-input"
-                            placeholder="Enter your user name"
+                            placeholder={t('Enter your user name')}
                             className="pl-10 border-gray-200 focus:border-orange-500 focus:ring-orange-500"
                             {...field}
                           />
@@ -148,7 +150,7 @@ export default function Login() {
                       htmlFor="password"
                       className="text-gray-700 font-medium"
                     >
-                      Password
+                      {t('Password')}
                     </Label>
                     <div className="relative">
                       <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
@@ -159,7 +161,7 @@ export default function Login() {
                           <Input
                             data-testid="password-input"
                             type={showPassword ? 'text' : 'password'}
-                            placeholder="Enter your password"
+                            placeholder={t('Enter your password')}
                             className="pl-10 pr-10 border-gray-200 focus:border-orange-500 focus:ring-orange-500"
                             {...field}
                           />
@@ -213,13 +215,13 @@ export default function Login() {
                           />
                         )}
                       />
-                      <span>Remember me</span>
+                      <span>{t('Remember me')}</span>
                     </label>
                     <button
                       type="button"
                       className="text-orange-500 hover:text-orange-600 font-medium"
                     >
-                      Forgot password?
+                      {t('Forgot password')}
                     </button>
                   </div>
 
@@ -232,11 +234,11 @@ export default function Login() {
                     {isPending ? (
                       <div className="flex items-center space-x-2">
                         <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                        <span>Signing in...</span>
+                        <span>{t('Signing in')}</span>
                       </div>
                     ) : (
                       <div className="flex items-center space-x-2">
-                        <span>Sign In</span>
+                        <span>{t('Sign In')}</span>
                         <ArrowRight className="w-4 h-4" />
                       </div>
                     )}
@@ -406,7 +408,7 @@ export default function Login() {
 
         {/* Footer */}
         <div className="text-center mt-6 text-sm text-gray-500">
-          <p>Secure login powered by advanced encryption</p>
+          <p>{t('Secure login powered by advanced encryption')}</p>
         </div>
       </div>
     </div>

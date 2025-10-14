@@ -200,7 +200,7 @@ export default function Sidebar({
               onClick={logout}
             >
               <LogOut className="h-4 w-4" />
-              Sign Out
+              {t('Sign Out')}
             </Button>
           )}
         </div>

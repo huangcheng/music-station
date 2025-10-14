@@ -157,9 +157,11 @@ export default function Upload() {
         {/* Header */}
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold text-gray-900 mb-2 text-balance">
-            {t('title')}
+            {t('Upload Your Music Files')}
           </h1>
-          <p className="text-gray-600 text-lg">{t('description')}</p>
+          <p className="text-gray-600 text-lg">
+            {t('Drag and drop your audio files here or click to browse')}
+          </p>
         </div>
 
         {/* Upload Area */}
@@ -190,21 +192,23 @@ export default function Upload() {
 
                 <div className="space-y-2">
                   <h3 className="text-xl font-semibold text-gray-900">
-                    {t('Upload.title')}
+                    {t('Drop your music files here')}
                   </h3>
-                  <p className="text-gray-600">{t('Upload.description')}</p>
+                  <p className="text-gray-600">
+                    {t('or click the button below to browse your computer')}
+                  </p>
                 </div>
 
                 <Button
                   onClick={() => fileInputRef.current?.click()}
                   className="bg-gray-800 hover:bg-gray-700 text-white shadow-lg hover:shadow-xl transition-shadow"
                 >
-                  {t('Upload.button')}
+                  {t('Select Files')}
                 </Button>
 
                 <input
-                  id="file-input"
                   ref={fileInputRef}
+                  id="file-input"
                   type="file"
                   multiple
                   accept={Object.keys(ACCEPTED_FORMATS).join(',')}
@@ -216,12 +220,36 @@ export default function Upload() {
           </CardContent>
         </Card>
 
+        {/* Supported Formats */}
+        {/*
+        <Card className="mb-8 shadow-lg drop-shadow-md border-gray-200">
+          <CardContent className="p-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">
+              {t('Supported Audio Formats')}
+            </h3>
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+              {Object.entries(ACCEPTED_FORMATS).map(
+                ([mimeType, { ext, icon: Icon }]) => (
+                  <div
+                    key={mimeType}
+                    className="flex items-center space-x-2 p-3 bg-gray-50 rounded-lg shadow-sm hover:shadow-md transition-shadow border border-gray-200"
+                  >
+                    <Icon className="h-5 w-5 text-gray-700" />
+                    <span className="font-medium text-gray-900">{ext}</span>
+                  </div>
+                ),
+              )}
+            </div>
+          </CardContent>
+        </Card>
+        */}
+
         {/* Uploaded Files */}
         {uploadedFiles.length > 0 && (
           <Card className="shadow-lg drop-shadow-md border-gray-200">
             <CardContent className="p-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                {t('List.title')} ({uploadedFiles.length})
+                {t('Uploaded Files')} ({uploadedFiles.length})
               </h3>
               <div className="space-y-4">
                 {uploadedFiles.map((uploadedFile) => {
@@ -269,20 +297,20 @@ export default function Upload() {
                             />
                             <p className="text-xs text-gray-600">
                               {Math.round(uploadedFile.progress)}%{' '}
-                              {t('List.uploaded')}
+                              {t('uploaded')}
                             </p>
                           </div>
                         )}
 
                         {uploadedFile.status === 'completed' && (
                           <p className="text-sm text-gray-700 font-medium">
-                            {t('List.completed')}
+                            {t('Upload completed')}
                           </p>
                         )}
 
                         {uploadedFile.status === 'error' && (
                           <p className="text-sm text-red-600 font-medium">
-                            {t('List.error')}
+                            {t('Upload failed, please try again')}
                           </p>
                         )}
                       </div>
