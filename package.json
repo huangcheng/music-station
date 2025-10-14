@@ -12,7 +12,7 @@
     "dev": "next dev --turbopack",
     "build": "next build --turbopack",
     "start": "next start",
-    "vercel-build": "prisma generate && prisma migrate deploy && next build",
+    "vercel-build": "prisma generate && prisma migrate deploy && tsx ./prisma/seed.ts && next build",
     "prisma": "prisma generate && prisma migrate deploy && tsx ./prisma/seed.ts",
     "prisma:generate": "prisma generate",
     "lint": "eslint src --ext .ts,.tsx",
