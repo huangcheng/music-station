@@ -120,8 +120,8 @@ importers:
         specifier: ^4.2.4
         version: 4.2.4(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(rxjs@7.8.2)
       pino:
-        specifier: ^9.13.1
-        version: 9.13.1
+        specifier: ^10.0.0
+        version: 10.0.0
       react:
         specifier: 19.1.0
         version: 19.1.0
@@ -4499,8 +4499,8 @@ packages:
   pino-std-serializers@7.0.0:
     resolution: {integrity: sha512-e906FRY0+tV27iq4juKzSYPbUj2do2X2JX4EzSca1631EB2QJQUqGbDuERal7LCtOpxl6x3+nvo9NPZcmjkiFA==}
 
-  pino@9.13.1:
-    resolution: {integrity: sha512-Szuj+ViDTjKPQYiKumGmEn3frdl+ZPSdosHyt9SnUevFosOkMY2b7ipxlEctNKPmMD/VibeBI+ZcZCJK+4DPuw==}
+  pino@10.0.0:
+    resolution: {integrity: sha512-eI9pKwWEix40kfvSzqEP6ldqOoBIN7dwD/o91TY5z8vQI12sAffpR/pOqAD1IVVwIVHDpHjkq0joBPdJD0rafA==}
     hasBin: true
 
   pkce-challenge@5.0.0:
@@ -10020,7 +10020,7 @@ snapshots:
 
   pino-std-serializers@7.0.0: {}
 
-  pino@9.13.1:
+  pino@10.0.0:
     dependencies:
       atomic-sleep: 1.0.0
       on-exit-leak-free: 2.1.2

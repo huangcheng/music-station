@@ -63,7 +63,7 @@
     "next": "15.5.2",
     "next-intl": "^4.3.12",
     "observable-hooks": "^4.2.4",
-    "pino": "^9.13.1",
+    "pino": "^10.0.0",
     "react": "19.1.0",
     "react-dom": "19.1.0",
     "react-hook-form": "^7.65.0",
