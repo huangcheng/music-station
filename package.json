@@ -95,7 +95,7 @@
     "cz-conventional-changelog": "^3.3.0",
     "dotenv": "^17.2.3",
     "eslint": "latest",
-    "eslint-config-next": "15.5.2",
+    "eslint-config-next": "15.5.5",
     "eslint-config-prettier": "^10.1.8",
     "eslint-import-resolver-typescript": "^4.4.4",
     "eslint-plugin-import": "^2.32.0",
