@@ -22,8 +22,7 @@
     "test": "vitest run",
     "playwright": "playwright test",
     "playwright:report": "playwright show-report",
-    "playwright:ui": "playwright test --ui",
-    "postinstall": "prisma generate && prisma migrate deploy && tsx ./prisma/seed.ts"
+    "playwright:ui": "playwright test --ui"
   },
   "dependencies": {
     "@floating-ui/react": "^0.27.16",

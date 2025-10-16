@@ -38,8 +38,13 @@ export async function decrypt(
  * Create a session cookie for the user
  * @param userId
  * @param remember - if true, session lasts 30 days; otherwise, 7 days
+ * @param scheme - 'http' or 'https' to determine cookie secure flag
  */
-export async function createSession(userId: number, remember: boolean = false) {
+export async function createSession(
+  userId: number,
+  remember: boolean = false,
+  scheme: 'http' | 'https' = 'https',
+) {
   const ob$ = of(
     new Date(Date.now() + (remember ? 30 : 1) * 24 * 60 * 60 * 1000),
   ).pipe(
@@ -60,7 +65,8 @@ export async function createSession(userId: number, remember: boolean = false) {
             tap((cookieStore) => {
               cookieStore.set('session', session, {
                 httpOnly: true,
-                secure: true,
+                // set secure based on the provided scheme (https -> true, http -> false)
+                secure: scheme === 'https',
                 expires,
                 sameSite: 'lax',
               });

@@ -14,6 +14,10 @@ import { createSession } from '@/lib/session';
 const prisma = new PrismaClient();
 
 export async function POST(req: NextRequest) {
+  // Determine scheme from forwarded header; default to https
+  const scheme = (req.headers.get('x-forwarded-proto') ||
+    'https') as unknown as 'http' | 'https';
+
   const ob$ = from<Promise<LoginRequest>>(req.json()).pipe(
     switchMap(({ name, password, remember }) =>
       from(
@@ -34,7 +38,7 @@ export async function POST(req: NextRequest) {
       iif(
         () => record !== null,
         defer(() =>
-          from(createSession(record!.id, remember)).pipe(
+          from(createSession(record!.id, remember, scheme)).pipe(
             map((result) => (result ? omit(record!, ['password']) : null)),
           ),
         ),

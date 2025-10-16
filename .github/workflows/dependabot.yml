@@ -1,0 +1,41 @@
+name: Auto-Approve & Rebase Dependabot PRs
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches:
+      - main
+      - master
+
+jobs:
+  auto-approve-and-rebase:
+    name: Auto-approve & Rebase
+    runs-on: ubuntu-latest
+    if: github.actor == 'dependabot[bot]'
+
+    steps:
+      - name: Auto-approve PR
+        uses: hmarr/auto-approve-action@v2.1.1
+        with:
+          github-token: ${{ secrets.TOKEN }}
+
+      - name: Checkout PR branch
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.head_ref }}
+
+      - name: Rebase onto target branch
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          git fetch origin ${{ github.event.pull_request.base.ref }}
+          git rebase origin/${{ github.event.pull_request.base.ref }}
+          git push --force-with-lease
+
+      - name: Enable auto-merge
+        uses: peter-evans/enable-pull-request-automerge@v2
+        with:
+          github-token: ${{ secrets.TOKEN }}
+          pull-request-number: ${{ github.event.pull_request.number }}
+          merge-method: rebase
+
