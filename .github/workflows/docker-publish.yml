@@ -43,13 +43,3 @@ jobs:
             ghcr.io/${{ github.repository_owner }}/music-station:latest
             ghcr.io/${{ github.repository_owner }}/music-station:${{ github.sha }}
 
-      - name: Make GHCR package public
-        env:
-          TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          PACKAGE_NAME: music-station
-        run: |
-          curl -X PUT \
-            -H "Accept: application/vnd.github.v3+json" \
-            -H "Authorization: Bearer $TOKEN" \
-            https://api.github.com/user/packages/container/$PACKAGE_NAME/visibility \
-            -d '{"visibility":"public"}'
