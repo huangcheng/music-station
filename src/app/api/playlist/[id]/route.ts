@@ -108,7 +108,7 @@ export async function PUT(
 }
 
 export async function DELETE(
-  req: NextRequest,
+  _: NextRequest,
   ctx: RouteContext<'/api/playlist/[id]'>,
 ) {
   const ob$ = from(ctx.params).pipe(

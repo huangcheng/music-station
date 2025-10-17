@@ -6,4 +6,5 @@ GET http://localhost:3000/api/music
 ### GET All Artist
 GET http://localhost:3000/api/artists
 
-###
+### Scan Music Library
+POST http://localhost:3000/api/task/scan

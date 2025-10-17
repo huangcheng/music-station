@@ -3,49 +3,31 @@ import path from 'node:path';
 import crypto from 'node:crypto';
 
 import { NextResponse } from 'next/server';
-import {
-  forkJoin,
-  of,
-  iif,
-  from,
-  lastValueFrom,
-  defer,
-  Observable,
-} from 'rxjs';
+import { forkJoin, of, iif, from, lastValueFrom, defer } from 'rxjs';
 import { switchMap, map, catchError } from 'rxjs/operators';
 import { PrismaClient } from '@prisma/client';
-import { parseBuffer } from 'music-metadata';
 import pino from 'pino';
 
 import type { NextRequest } from 'next/server';
 
 import { isMusicFile, musicExtend } from '@/lib';
+import { processMediaFile, tracksDir, coversDir } from '@/lib/server';
 
-type SavedFile = {
-  buffer?: Buffer;
+type FileResult = {
   field: string;
-  originalName?: string;
   fileName: string;
-  size: number;
-  url: string;
   hash: string;
+  url: string;
+  status: 'skipped' | 'processed' | 'failed';
 };
 
 const prisma = new PrismaClient();
 
 const logger = pino({ name: 'upload-route' });
 
-const getStorageLocation = (): string =>
-  process.env.NEXT_PUBLIC_STORAGE_PREFIX ?? path.join(process.cwd(), 'data');
-
-const storage = getStorageLocation();
-
-const tracks = path.join(storage, 'tracks');
-const covers = path.join(storage, 'covers');
-
 async function ensureUploadDir() {
-  await fs.mkdir(tracks, { recursive: true });
-  await fs.mkdir(covers, { recursive: true });
+  await fs.mkdir(tracksDir, { recursive: true });
+  await fs.mkdir(coversDir, { recursive: true });
 }
 
 export async function POST(req: Request) {
@@ -55,243 +37,60 @@ export async function POST(req: Request) {
     switchMap((entries) =>
       forkJoin(
         entries
+          .filter(
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            ([_, value]) => typeof (value as File).arrayBuffer === 'function',
+          )
           .map(([field, value]) => {
-            if (typeof (value as File).arrayBuffer !== 'function') {
-              return of(null);
-            }
-
             const file = value as File;
-
             return from(file.arrayBuffer()).pipe(
               map((arrayBuffer) => Buffer.from(arrayBuffer)),
               switchMap((buffer) => {
-                // const safeName = `${Date.now()}_${path.basename(file.name)}`;
-                const fileName = path.basename(file.name);
-                const filePath = path.join(tracks, fileName);
-                const size = file.size;
-
                 const hash = crypto
                   .createHash('sha256')
                   .update(buffer)
                   .digest('hex');
-
-                return from(fs.writeFile(filePath, buffer)).pipe(
-                  map(() => ({
-                    field,
-                    buffer,
-                    // originalName: file.name,
-                    hash,
-                    fileName,
-                    size,
-                    url: `/uploads/${fileName}`,
-                  })),
-                );
-              }),
-            );
-          })
-          .filter(Boolean) as Observable<SavedFile>[],
-      ),
-    ),
-    switchMap((files) =>
-      forkJoin(
-        files.map((file) => {
-          const { buffer, hash, size } = file;
-
-          return from(parseBuffer(buffer!)).pipe(
-            map((meta) => {
-              const { common, format } = meta;
-              const {
-                codec,
-                lossless,
-                numberOfChannels,
-                bitsPerSample,
-                sampleRate,
-                duration,
-                bitrate,
-              } = format;
-
-              const name = common.title ?? path.parse(file.fileName).name;
-              // const artists = common.artists ?? common.artist?.split(',') ?? [];
-              const artist = common.artist ?? 'Unknown Artist';
-              const genre = common.genre ?? [];
-              const album = common.album ?? 'Unknown Album';
-              const picture = common.picture?.[0];
-              const disk = common.disk?.no ?? 1;
-              const trackNo = common.track?.no ?? 0;
-              const trackCount = common.track?.of ?? 1;
-              const year = common.year;
-              const date = common.date;
-
-              return {
-                hash,
-                name,
-                artist,
-                album,
-                genre,
-                picture,
-                year,
-                date,
-                disk,
-                trackNo,
-                trackCount,
-                codec,
-                lossless,
-                numberOfChannels,
-                bitsPerSample,
-                sampleRate,
-                duration,
-                bitrate,
-                size,
-              };
-            }),
-            switchMap(
-              ({
-                hash,
-                name,
-                artist,
-                album,
-                genre,
-                picture,
-                year,
-                date,
-                disk,
-                trackNo,
-                trackCount,
-                ...rest
-              }) => {
-                return iif(
-                  () => picture !== undefined,
-                  defer(() => {
-                    const ext = picture!.format.split('/').pop() || 'jpg';
-                    const coverName = `${path.parse(file.fileName).name}.${ext}`;
-                    const cover = path.join(covers, coverName);
-
-                    return from(fs.writeFile(cover, picture!.data)).pipe(
-                      map(() => coverName),
-                    );
-                  }),
-                  of(null),
-                ).pipe(
-                  switchMap((cover) =>
-                    forkJoin({
-                      artist: from(
-                        prisma.artist.upsert({
-                          where: { name: artist },
-                          update: {},
-                          create: { name: artist },
-                        }),
-                      ),
-                      genre:
-                        genre.length > 0
-                          ? forkJoin(
-                              genre.map((name) =>
-                                from(
-                                  prisma.genre.upsert({
-                                    where: { name },
-                                    update: {},
-                                    create: { name },
-                                  }),
-                                ),
-                              ),
-                            )
-                          : of([]),
-                      album: from(
-                        prisma.album.upsert({
-                          where: { name: album },
-                          update: {},
-                          create: {
-                            name: album,
-                            year,
-                            date,
-                            trackCount,
-                          },
-                        }),
-                      ),
-                    }).pipe(
-                      switchMap(({ artist, genre, album }) =>
-                        from(
-                          prisma.track.upsert({
-                            where: { hash },
-                            update: {
-                              name,
-                              cover,
-                              disk,
-                              trackNo,
-                              year,
-                              date,
-                              albumId: album.id,
-                              artistId: artist.id,
-                              file: file.fileName,
-                              ...rest,
-                            },
-                            create: {
+                const fileName = path.basename(file.name);
+                const filePath = path.join(tracksDir, fileName);
+                return from(prisma.track.findUnique({ where: { hash } })).pipe(
+                  switchMap((existing) =>
+                    iif(
+                      () => existing !== null,
+                      of({
+                        field,
+                        fileName,
+                        hash,
+                        url: `/uploads/${fileName}`,
+                        status: 'skipped' as const,
+                      }),
+                      from(fs.writeFile(filePath, buffer)).pipe(
+                        switchMap(() =>
+                          processMediaFile(filePath, hash, buffer),
+                        ),
+                        map(
+                          (success) =>
+                            ({
+                              field,
+                              fileName,
                               hash,
-                              name,
-                              cover,
-                              disk,
-                              year,
-                              date,
-                              trackNo,
-                              albumId: album.id,
-                              artistId: artist.id,
-                              file: file.fileName,
-                              ...rest,
-                            },
-                          }),
-                        ).pipe(
-                          switchMap((record) =>
-                            forkJoin([
-                              ...(genre.length > 0
-                                ? [
-                                    forkJoin(
-                                      genre.map((g) =>
-                                        from(
-                                          prisma.trackGenre.create({
-                                            data: {
-                                              genre: {
-                                                connect: { id: g.id },
-                                              },
-                                              track: {
-                                                connect: { id: record.id },
-                                              },
-                                            },
-                                          }),
-                                        ).pipe(catchError(() => of(null))),
-                                      ),
-                                    ),
-                                  ]
-                                : []),
-                              from(
-                                prisma.album.update({
-                                  where: { id: album.id },
-                                  data: {
-                                    artistId: artist.id,
-                                  },
-                                }),
-                              ),
-                            ]),
-                          ),
+                              url: `/uploads/${fileName}`,
+                              status: success ? 'processed' : 'failed',
+                            }) as const,
                         ),
                       ),
                     ),
                   ),
                 );
-              },
-            ),
-            map(() => file),
-            map(() => {
-              delete file.buffer;
-
-              return file;
-            }),
-          );
-        }),
+              }),
+            );
+          }),
       ),
     ),
-    map((files) => NextResponse.json({ success: true, files })),
+    map((results: FileResult[]) =>
+      NextResponse.json({ success: true, files: results }),
+    ),
     catchError((error) => {
       console.error(error.message ?? error);
-
       return of(
         NextResponse.json(
           { success: false, error: String(error) },
@@ -300,7 +99,6 @@ export async function POST(req: Request) {
       );
     }),
   );
-
   return await lastValueFrom(ob$);
 }
 
@@ -317,7 +115,7 @@ export async function GET(request: NextRequest) {
         defer(() => {
           const isMusic = isMusicFile(file!);
 
-          const dir = isMusic ? tracks : covers;
+          const dir = isMusic ? tracksDir : coversDir;
 
           const filePath = path.join(dir, path.basename(file!));
 
